@@ -330,7 +330,9 @@ void TextCell::SetValue(const wxString &text)
 }
 
 TextCell::TextCell(const TextCell &cell):
-  TextCell(cell.m_group, cell.m_configuration, cell.m_cellPointers)
+  Cell(cell.m_group, cell.m_configuration, cell.m_cellPointers),
+  m_text(cell.m_text),
+  m_displayedText(cell.m_displayedText)
 {
   m_forceBreakLine = cell.m_forceBreakLine;
   m_bigSkip = cell.m_bigSkip;
@@ -343,6 +345,7 @@ TextCell::TextCell(const TextCell &cell):
   m_fontsize_old = -1;
   m_textStyle = cell.m_textStyle;
   m_highlight = cell.m_highlight;
+  m_userDefinedLabel = cell.m_userDefinedLabel;
   m_dontEscapeOpeningParenthesis = cell.m_dontEscapeOpeningParenthesis;
 }
 
