@@ -95,7 +95,7 @@ bool Printout::OnPrintPage(int num)
   if (tmp != NULL)
   {
     if (tmp->GetGroupType() == GC_TYPE_PAGEBREAK)
-      tmp = tmp->GetNext();
+      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
     if (tmp == NULL)
       return true;
 
@@ -125,7 +125,7 @@ bool Printout::OnPrintPage(int num)
         drop = tmp->m_next->GetMaxDrop();
       }
 
-      tmp = tmp->GetNext();
+      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
       if (tmp == NULL || tmp->BreakPageHere())
         break;
     }
@@ -178,7 +178,7 @@ void Printout::BreakPages()
     else
       currentHeight += tmp->GetMaxHeight() + skip;
 
-    tmp = tmp->GetNext();
+    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
   }
 }
 
@@ -323,7 +323,7 @@ void Printout::Recalculate()
   {
     tmp->ResetSize();
     tmp->Recalculate();
-    tmp = tmp->GetNext();
+    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
   }
 }
 

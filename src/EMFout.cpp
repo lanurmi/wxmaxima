@@ -128,7 +128,7 @@ bool Emfout::Layout()
     while (tmp != NULL)
     {
       tmp->Recalculate();
-      tmp = tmp->GetNext();
+      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
     }
   }
 

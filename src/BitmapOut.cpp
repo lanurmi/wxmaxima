@@ -86,7 +86,7 @@ bool BitmapOut::Layout(long int maxSize)
     while (tmp != NULL)
     {
       tmp->Recalculate();
-      tmp = tmp->GetNext();
+      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
     }
   }
 
