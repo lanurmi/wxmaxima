@@ -71,13 +71,13 @@ std::list<std::shared_ptr<Cell>> ConjugateCell::GetInnerCells()
   return innerCells;
 }
 
-void ConjugateCell::SetInner(std::shared_ptr<Cell> inner)
+void ConjugateCell::SetInner(Cell *inner)
 {
   if (inner == NULL)
     return;
-  m_innerCell = inner;
+  m_innerCell = std::shared_ptr<Cell>(inner);
 
-  m_last = m_innerCell;
+  m_last = m_innerCell.get();
   if (m_last != NULL)
     while (m_last->m_next != NULL)
       m_last = m_last->m_next;
@@ -191,16 +191,10 @@ bool ConjugateCell::BreakUp()
   {
     m_isBrokenIntoLines = true;
     m_open->m_nextToDraw = m_innerCell;
-    m_innerCell->m_previousToDraw = m_open;
     wxASSERT_MSG(m_last != NULL, _("Bug: No last cell in an conjugateCell!"));
     if (m_last != NULL)
-    {
       m_last->m_nextToDraw = m_close;
-      m_close->m_previousToDraw = m_last;
-    }
     m_close->m_nextToDraw = m_nextToDraw;
-    if (m_nextToDraw != NULL)
-      m_nextToDraw->m_previousToDraw = m_close;
     m_nextToDraw = m_open;
     ResetData();        
     m_height = wxMax(m_innerCell->GetMaxHeight(), m_open->GetMaxHeight());

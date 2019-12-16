@@ -155,8 +155,10 @@ GroupCell::GroupCell(const GroupCell &cell):
   GroupCell(cell.m_configuration, cell.m_groupType, cell.m_cellPointers, wxEmptyString)
 {
   CopyCommonData(cell);
-  SetInput(cell.m_inputLabel->CopyList());
-  SetOutput(cell.m_output->CopyList());
+  if (cell.m_inputLabel)
+    SetInput(cell.m_inputLabel->CopyList());
+  if (cell.m_output)
+    SetOutput(cell.m_output->CopyList());
   Hide(cell.m_isHidden);
   AutoAnswer(cell.m_autoAnswer);
 }
@@ -288,7 +290,7 @@ void GroupCell::ResetInputLabelList()
     if (tmp->IsFoldable() && (tmp->m_hiddenTree))
       tmp->m_hiddenTree->ResetInputLabelList();
 
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
 }
 
@@ -400,7 +402,7 @@ wxString GroupCell::ToWXM(bool wxm)
     while (tmp != NULL)
     {
       retval += tmp->ToWXM(wxm);
-      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+      tmp = tmp->GetNext();
     }
     if(wxm)
       retval += wxT("\n/* [wxMaxima: fold    end   ] */\n");
@@ -954,7 +956,7 @@ GroupCell *GroupCell::UpdateYPosition()
     else
       m_currentPoint.y = dynamic_cast<GroupCell *>(m_previous)->m_currentPoint.y;
   }
-  return dynamic_cast<GroupCell *>(m_next);
+  return GetNext();
 }
 
 int GroupCell::GetInputIndent()
@@ -2200,7 +2202,7 @@ bool GroupCell::HideTree(GroupCell *tree)
   {
     if (tmp->GetLabel())
       tmp->GetLabel()->ClearCacheList();
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
 
   return true;
@@ -2239,7 +2241,7 @@ void GroupCell::SetHiddenTreeParent(GroupCell *parent)
   while (cell)
   {
     cell->m_hiddenTreeParent = parent;
-    cell = dynamic_cast<GroupCell *>(cell->m_next);
+    cell = cell->GetNext();
   }
 }
 
@@ -2262,7 +2264,7 @@ GroupCell *GroupCell::Fold()
     if (end->GetLabel())
       end->GetLabel()->ClearCacheList();
 
-    GroupCell *tmp = dynamic_cast<GroupCell *>(end->m_next);
+    GroupCell *tmp = end->GetNext();
     if (tmp == NULL)
       break;
     if ((m_groupType == tmp->GetGroupType()) || IsLesserGCType(tmp->GetGroupType()))
@@ -2331,7 +2333,7 @@ GroupCell *GroupCell::FoldAll()
     }
     if (tmp->m_hiddenTree != NULL)
       tmp->m_hiddenTree->FoldAll();
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
   return result;
 }
@@ -2353,7 +2355,7 @@ GroupCell *GroupCell::UnfoldAll()
     }
     if (tmp->m_hiddenTree != NULL)
       m_hiddenTree->UnfoldAll();
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
   return result;
 }
@@ -2466,7 +2468,7 @@ void GroupCell::Number(int &section, int &subsection, int &subsubsection, int &h
     if (IsFoldable() && tmp->m_hiddenTree)
       tmp->m_hiddenTree->Number(section, subsection, subsubsection, heading5, heading6, image);
 
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
 }
 
@@ -2494,7 +2496,7 @@ bool GroupCell::Contains(GroupCell *cell)
     }
 
     // Step to the next cell.
-    tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+    tmp = tmp->GetNext();
   }
 
   return false;

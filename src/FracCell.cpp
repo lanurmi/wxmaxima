@@ -41,6 +41,8 @@ FracCell::FracCell(Cell *parent, Configuration **config, CellPointers *cellPoint
   m_close2(new TextCell(m_group, m_configuration, m_cellPointers, wxT(")"))),
   m_divide(new TextCell(parent, config, cellPointers, "/"))
 {
+  m_num_Last = NULL;
+  m_denom_Last = NULL;
   m_expDivideWidth = 12;
   m_fracStyle = FC_NORMAL;
   m_exponent = false;
@@ -87,11 +89,11 @@ std::list<std::shared_ptr<Cell>> FracCell::GetInnerCells()
   return innerCells;
 }
 
-void FracCell::SetNum(std::shared_ptr<Cell> num)
+void FracCell::SetNum(Cell *num)
 {
   if (num == NULL)
     return;
-  m_num = num;
+  m_num = std::shared_ptr<Cell>(num);
   m_num_Last = num;
   if (m_num_Last != NULL)
   {
@@ -100,11 +102,11 @@ void FracCell::SetNum(std::shared_ptr<Cell> num)
   }
 }
 
-void FracCell::SetDenom(std::shared_ptr<Cell> denom)
+void FracCell::SetDenom(Cell *denom)
 {
   if (denom == NULL)
     return;
-  m_denom = denom;
+  m_denom = std::shared_ptr<Cell>(denom);
   m_denom_Last = denom;
   if (m_denom_Last != NULL)
   {
@@ -153,7 +155,7 @@ void FracCell::RecalculateWidths(int fontsize)
     // We want half a space's widh of blank space to separate us from the
     // next minus.
 
-    if (((GetPrevious().get() != NULL) && (GetPrevious()->ToString().EndsWith(wxT("-")))))
+    if (((m_previous != NULL) && (m_previous->ToString().EndsWith(wxT("-")))))
       m_horizontalGapLeft = m_protrusion;
     else
       m_horizontalGapLeft = 0;
@@ -286,7 +288,7 @@ wxString FracCell::ToString()
     }
     else
     {
-      std::shared_ptr<Cell> tmp = m_denom;
+      Cell *tmp = m_denom.get();
       while (tmp != NULL)
       {
         tmp = tmp->m_next;   // Skip the d
@@ -329,7 +331,7 @@ wxString FracCell::ToMatlab()
 	}
 	else
 	{
-	  std::shared_ptr<Cell> tmp = m_denom;
+	  Cell *tmp = m_denom.get();
 	  while (tmp != NULL)
 	  {
 		tmp = tmp->m_next;   // Skip the d
@@ -440,30 +442,17 @@ bool FracCell::BreakUp()
   if (!m_isBrokenIntoLines)
   {
     m_isBrokenIntoLines = true;
-    m_open1->m_previousToDraw = std::shared_ptr<Cell>(this);
     m_open1->m_nextToDraw = m_num;
-    m_num->m_previousToDraw = m_open1;
     wxASSERT_MSG(m_num_Last != NULL, _("Bug: No last cell in an numerator!"));
     if (m_num_Last != NULL)
-    {
       m_num_Last->m_nextToDraw = m_close1;
-      m_close1->m_previousToDraw = m_num_Last;
-    }
     m_close1->m_nextToDraw = m_divide;
-    m_divide->m_previousToDraw = m_close1;
     m_divide->m_nextToDraw = m_open2;
-    m_open2->m_previousToDraw = m_divide;
     m_open2->m_nextToDraw = m_denom;
-    m_denom->m_previousToDraw = m_open2;
     wxASSERT_MSG(m_denom_Last != NULL, _("Bug: No last cell in an denominator!"));
     if (m_denom_Last != NULL)
-    {
-      m_denom_Last->m_nextToDraw = m_close2;
-      m_close2->m_previousToDraw = m_denom_Last;
-    }
+      m_denom_Last->m_nextToDraw = m_close2.get();
     m_close2->m_nextToDraw = m_nextToDraw;
-    if (m_nextToDraw != NULL)
-      m_nextToDraw->m_previousToDraw = m_close2;
     m_nextToDraw = m_open1;
     ResetData();    
     return true;
