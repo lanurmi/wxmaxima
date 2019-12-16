@@ -157,7 +157,7 @@ public:
   */
   void SearchStartedHere(int index)
   {
-    m_cellPointers->m_cellSearchStartedIn = this;
+    m_cellPointers->m_cellSearchStartedIn = std::dynamic_pointer_cast<EditorCell, Cell>(GetGroup())->GetInput();
     m_cellPointers->m_indexSearchStartedAt = index;
   }
 
