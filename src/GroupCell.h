@@ -222,6 +222,18 @@ public:
   std::shared_ptr<Cell> GetPrompt()
     { return m_inputLabel.get(); }
 
+  //! Remember that this cell's editor is the cell the search was started in.
+  void SearchStartedHere()
+    {
+      std::shared_ptr<EditorCell, Cell> editorCell;
+      if((m_inputLabel) && (m_inputLabel->GetNext()))
+      {
+        editorCell = std::dynamic_pointer_cast<EditorCell, Cell>(m_inputLabel->GetNext());
+        m_cellPointers->m_cellSearchStartedIn = editorCell;
+        m_cellPointers->m_indexSearchStartedAt = editorCell->m_positionOfCaret;
+      }
+    }
+  
   std::shared_ptr<EditorCell> GetInput() const
     {
       if (m_inputLabel != NULL)

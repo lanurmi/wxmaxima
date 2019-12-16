@@ -151,23 +151,6 @@ public:
   int IndexSearchStartedAt() const
   { return m_cellPointers->m_indexSearchStartedAt; }
 
-  /*! Remember that this is the cell the search was started in.
-
-    \param index The index of the character the search was started at.
-  */
-  void SearchStartedHere(int index)
-  {
-    m_cellPointers->m_cellSearchStartedIn = std::dynamic_pointer_cast<EditorCell, Cell>(GetGroup())->GetInput();
-    m_cellPointers->m_indexSearchStartedAt = index;
-  }
-
-  //! Remember that this is the cell the search was started in.
-  void SearchStartedHere()
-  {
-    m_cellPointers->m_cellSearchStartedIn = this;
-    m_cellPointers->m_indexSearchStartedAt = m_positionOfCaret;
-  }
-
   //! Remember that this is the cell the mouse selection was started in.
   void MouseSelectionStartedHere()
   { m_cellPointers->m_cellMouseSelectionStartedIn = this; }
