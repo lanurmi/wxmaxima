@@ -151,17 +151,17 @@ public:
   void SetGroup(std::shared_ptr<Cell> parent) override; // setting parent for all mathcells in GC
 
   // selection methods
-  void SelectInner(const wxRect &rect, Cell **first, Cell **last) override;
+  void SelectInner(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last) override;
 
-  void SelectPoint(const wxPoint &point, Cell **first, Cell **last);
-
-  // cppcheck-suppress functionConst
-  void SelectOutput(Cell **start, Cell **end);
+  void SelectPoint(const wxPoint &point, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last);
 
   // cppcheck-suppress functionConst
-  void SelectRectInOutput(const wxRect &rect, const wxPoint &one, const wxPoint &two, Cell **first, Cell **last);
+  void SelectOutput(std::shared_ptr<Cell> *start, std::shared_ptr<Cell> *end);
 
-  void SelectRectGroup(const wxRect &rect, const wxPoint &one, const wxPoint &two, Cell **first, Cell **last);
+  // cppcheck-suppress functionConst
+  void SelectRectInOutput(const wxRect &rect, const wxPoint &one, const wxPoint &two, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last);
+
+  void SelectRectGroup(const wxRect &rect, const wxPoint &one, const wxPoint &two, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last);
 
   // methods for manipulating GroupCell
   // cppcheck-suppress functionConst

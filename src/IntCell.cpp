@@ -91,28 +91,28 @@ std::list<std::shared_ptr<Cell>> IntCell::GetInnerCells()
   return innerCells;
 }
 
-void IntCell::SetOver(Cell *name)
+void IntCell::SetOver(std::shared_ptr<Cell> name)
 {
   if (name == NULL)
     return;
   m_over = std::shared_ptr<Cell>(name);
 }
 
-void IntCell::SetBase(Cell *base)
+void IntCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
   m_base = std::shared_ptr<Cell>(base);
 }
 
-void IntCell::SetUnder(Cell *under)
+void IntCell::SetUnder(std::shared_ptr<Cell> under)
 {
   if (under == NULL)
     return;
   m_under = std::shared_ptr<Cell>(under);
 }
 
-void IntCell::SetVar(Cell *var)
+void IntCell::SetVar(std::shared_ptr<Cell> var)
 {
   if (var == NULL)
     return;
@@ -393,13 +393,11 @@ wxString IntCell::ToString()
 
   s += m_base->ListToString();
 
-  Cell *tmp = m_var.get();
+  std::shared_ptr<Cell> tmp = m_var;
   wxString var;
   tmp = tmp->m_next;
   if (tmp != NULL)
-  {
     var = tmp->ListToString();
-  }
 
   wxString to = m_over->ListToString();
   wxString from = m_under->ListToString();
@@ -418,13 +416,11 @@ wxString IntCell::ToMatlab()
 
   s += m_base->ListToMatlab();
 
-  Cell *tmp = m_var.get();
+  std::shared_ptr<Cell> tmp = m_var;
   wxString var;
   tmp = tmp->m_next;
   if (tmp != NULL)
-  {
-	var = tmp->ListToMatlab();
-  }
+    var = tmp->ListToMatlab();
 
   wxString to = m_over->ListToMatlab();
   wxString from = m_under->ListToMatlab();
