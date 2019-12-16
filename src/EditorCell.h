@@ -124,24 +124,24 @@ public:
     Needs to be kept in EditorCell so if an EditorCell is deleted it can automatically
     remove this pointer.
    */
-  EditorCell *MouseSelectionStart() const
-  { return dynamic_cast<EditorCell *>(m_cellPointers->m_cellMouseSelectionStartedIn); }
+  std::shared_ptr<EditorCell> MouseSelectionStart() const
+    { return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers->m_cellMouseSelectionStartedIn); }
 
   /*! Tells where the keyboard selection has started.
 
     Needs to be kept in EditorCell so if an EditorCell is deleted it can automatically
     remove this pointer.
    */
-  EditorCell *KeyboardSelectionStart() const
-  { return dynamic_cast<EditorCell *>(m_cellPointers->m_cellKeyboardSelectionStartedIn); }
+  std::shared_ptr<EditorCell> KeyboardSelectionStart() const
+  { return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers->m_cellKeyboardSelectionStartedIn); }
 
   /*! Tells where the search has started.
 
     Needs to be kept in EditorCell so if an EditorCell is deleted it can automatically
     remove this pointer.
    */
-  EditorCell *SearchStart() const
-  { return dynamic_cast<EditorCell *>(m_cellPointers->m_cellSearchStartedIn); }
+  std::shared_ptr<EditorCell> SearchStart() const
+  { return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers->m_cellSearchStartedIn); }
 
   /*! At which character inside its cell has the search started?
 

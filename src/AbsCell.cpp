@@ -71,13 +71,13 @@ std::list<std::shared_ptr<Cell>> AbsCell::GetInnerCells()
   return innerCells;
 }
 
-void AbsCell::SetInner(Cell *inner)
+void AbsCell::SetInner(std::shared_ptr<Cell> inner)
 {
   if (inner == NULL)
     return;
-  m_innerCell = std::shared_ptr<Cell>(inner);
+  m_innerCell = inner;
 
-  m_last = m_innerCell.get();
+  m_last = m_innerCell;
   if (m_last != NULL)
     while (m_last->m_next != NULL)
       m_last = m_last->m_next;
@@ -196,7 +196,7 @@ bool AbsCell::BreakUp()
     m_open->m_nextToDraw = m_innerCell;
     wxASSERT_MSG(m_last != NULL, _("Bug: No last cell in an absCell!"));
     if (m_last != NULL)
-      m_last->m_nextToDraw = m_close.get();
+      m_last->m_nextToDraw = m_close;
     m_close->m_nextToDraw = m_nextToDraw;
     m_nextToDraw = m_open;
     ResetData();    
