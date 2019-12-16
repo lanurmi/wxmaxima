@@ -61,7 +61,7 @@ public:
 
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
-  void SetInner(Cell *inner, CellType  type);
+  void SetInner(std::shared_ptr<Cell> inner, CellType  type);
 
   void SetPrint(bool print)
   {
@@ -98,7 +98,7 @@ protected:
   std::shared_ptr<Cell> m_innerCell;
   std::shared_ptr<TextCell> m_open;
   std::shared_ptr<TextCell> m_close;
-  Cell *m_last1;
+  std::shared_ptr<Cell> m_last1;
   bool m_print;
   int m_numberOfExtensions;
   int m_charWidth, m_charHeight;

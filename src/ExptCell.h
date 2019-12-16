@@ -59,10 +59,10 @@ public:
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
   //! Set the mantissa
-  void SetBase(Cell *base);
+  void SetBase(std::shared_ptr<Cell> base);
 
   //! Set the exponent
-  void SetPower(Cell *power);
+  void SetPower(std::shared_ptr<Cell> power);
 
   //! By how much do we want to rise the power?
   double PowRise() const {return Scale_Px(.8 * m_fontSize + MC_EXP_INDENT);}
@@ -102,8 +102,8 @@ protected:
   std::shared_ptr<TextCell> m_open;
   std::shared_ptr<TextCell> m_close;
   std::shared_ptr<TextCell> m_exp;
-  Cell *m_expt_last;
-  Cell *m_base_last;
+  std::shared_ptr<Cell> m_expt_last;
+  std::shared_ptr<Cell> m_base_last;
   bool m_isMatrix;
 };
 

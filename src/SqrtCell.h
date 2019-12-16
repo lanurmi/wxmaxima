@@ -59,7 +59,7 @@ public:
 
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
-  void SetInner(Cell *inner);
+  void SetInner(std::shared_ptr<Cell> inner);
 
   void RecalculateHeight(int fontsize) override;
 
@@ -87,7 +87,7 @@ protected:
   std::shared_ptr<Cell> m_innerCell;
   std::shared_ptr<TextCell> m_open;
   std::shared_ptr<TextCell> m_close;
-  Cell *m_last;
+  std::shared_ptr<Cell> m_last;
   int m_signWidth, m_signSize, m_signTop;
   int m_signType;
   double m_signFontScale;

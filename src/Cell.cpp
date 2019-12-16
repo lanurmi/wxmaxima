@@ -25,7 +25,6 @@
 
   Cell is the base class for all cell- or list-type elements.
 */
-
 #include "Cell.h"
 #include <wx/regex.h>
 #include <wx/sstream.h>
@@ -63,10 +62,6 @@ Cell::Cell(Cell *group, Configuration **config, CellPointers *cellPointers)
   m_isHidableMultSign = false;
   m_lastZoomFactor = -1;
   m_clientWidth_old = -1;
-  m_next = NULL;
-  m_previous = NULL;
-  m_nextToDraw = NULL;
-  m_previousToDraw = NULL;
   m_fullWidth = -1;
   m_lineWidth = -1;
   m_maxCenter = -1;
@@ -92,19 +87,6 @@ Cell::Cell(Cell *group, Configuration **config, CellPointers *cellPointers)
 
 Cell::~Cell()
 {
-  // Find the last cell in this list of cells
-  Cell *last = this;
-  while (last->m_next != NULL)
-    last = last->m_next;
-
-  // Delete all cells beginning with the last one
-  while ((last != NULL) && (last != this))
-  {
-    Cell *tmp = last;
-    last = last->m_previous;
-    wxDELETE(tmp);
-    last->m_next = NULL;
-  }
 }
 
 void Cell::SetType(CellType type)
@@ -173,15 +155,15 @@ void Cell::CopyCommonData(const Cell & cell)
   m_isHidableMultSign = cell.m_isHidableMultSign;
 }
 
-Cell *Cell::CopyList()
+std::shared_ptr<Cell> Cell::CopyList()
 {
-  Cell *dest = Copy();
-  Cell *ret = dest;
-  Cell *src = m_next;
+  std::shared_ptr<Cell> dest(Copy());
+  std::shared_ptr<Cell> ret = dest;
+  std::shared_ptr<Cell> src = m_next;
 
   while (src != NULL)
   {
-    dest->AppendCell(src->Copy());
+    dest->AppendCell(std::shared_ptr<Cell>(src->Copy()));
     src = src->m_next;
     dest = dest->m_next;
   }
@@ -190,7 +172,7 @@ Cell *Cell::CopyList()
 
 void Cell::ClearCacheList()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -201,7 +183,8 @@ void Cell::ClearCacheList()
 
 void Cell::SetGroupList(Cell *group)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
+
   while (tmp != NULL)
   {
     tmp->SetGroup(group);
@@ -216,7 +199,7 @@ int Cell::CellsInListRecursive()
   //! The number of cells the current group contains (-1, if no GroupCell)
   int cells = 0;
 
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while(tmp != NULL)
   {
@@ -252,7 +235,7 @@ void Cell::SetGroup(Cell *group)
 /***
  * Append new cell to the end of this list.
  */
-void Cell::AppendCell(Cell *p_next)
+void Cell::AppendCell(std::shared_ptr<Cell> p_next)
 {
   if (p_next == NULL)
     return;
@@ -260,7 +243,7 @@ void Cell::AppendCell(Cell *p_next)
   m_maxCenter = -1;
 
   // Search the last cell in the list
-  Cell *LastInList = this;
+  std::shared_ptr<Cell> LastInList = std::shared_ptr<Cell>(this);
   while (LastInList->m_next != NULL)
     LastInList = LastInList->m_next;
 
@@ -269,7 +252,7 @@ void Cell::AppendCell(Cell *p_next)
   LastInList->m_next->m_previous = LastInList;
 
   // Search the last cell in the list that is sorted by the drawing order
-  Cell *LastToDraw = LastInList;
+  std::shared_ptr<Cell> LastToDraw = LastInList;
   while (LastToDraw->m_nextToDraw != NULL)
     LastToDraw = LastToDraw->m_nextToDraw;
 
@@ -291,11 +274,11 @@ int Cell::GetMaxCenter()
 {
   if ((m_maxCenter < 0) || ((*m_configuration)->RecalculationForce()))
   {
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
     m_maxCenter  = 0;
     while (tmp != NULL)
     {
-      if ((tmp != this) && (tmp->m_breakLine))
+      if ((tmp.get() != this) && (tmp->m_breakLine))
         break;
       if(!tmp->m_isBrokenIntoLines)
         m_maxCenter = wxMax(m_maxCenter, tmp->m_center);
@@ -323,10 +306,10 @@ int Cell::GetMaxDrop()
 //  if ((m_maxDrop < 0) || ((*m_configuration)->RecalculationForce()))
   {
     m_maxDrop = 0;
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
     while (tmp != NULL)
     {
-      if ((tmp != this) && (tmp->m_breakLine))
+      if ((tmp.get() != this) && (tmp->m_breakLine))
         break;
       if(!tmp->m_isBrokenIntoLines)
         m_maxDrop = wxMax(m_maxDrop, tmp->m_height - tmp->m_center);
@@ -349,7 +332,7 @@ int Cell::GetFullWidth()
   // Recalculate the with of this list of cells only if this has been marked as necessary.
   if ((m_fullWidth < 0) || ((*m_configuration)->RecalculationForce()))
   {
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
     // We begin this calculation with a negative offset since the full width of only a single
     // cell doesn't contain the space that separates two cells - that is automatically added
@@ -373,7 +356,7 @@ int Cell::GetLineWidth()
     m_lineWidth = 0;
     int width = m_width;
 
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
     while(tmp != NULL)
     {
       width += tmp->m_width;
@@ -434,7 +417,7 @@ void Cell::AddToolTip(const wxString &tip)
 }
 void Cell::DrawList(wxPoint point)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
   while (tmp != NULL)
   {
     tmp->Draw(point);
@@ -446,7 +429,7 @@ void Cell::DrawList(wxPoint point)
 
 void Cell::RecalculateList(int fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -458,7 +441,7 @@ void Cell::RecalculateList(int fontsize)
 
 void Cell::ResetSizeList()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -470,7 +453,7 @@ void Cell::ResetSizeList()
 
 void Cell::RecalculateHeightList(int fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -488,7 +471,7 @@ void Cell::RecalculateHeightList(int fontsize)
 */
 void Cell::RecalculateWidthsList(const int &fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -615,7 +598,7 @@ wxString Cell::ToString()
 wxString Cell::ListToString()
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
   bool firstline = true;
 
   while (tmp != NULL)
@@ -656,7 +639,7 @@ wxString Cell::ToMatlab()
 wxString Cell::ListToMatlab()
 {
 	wxString retval;
-	Cell *tmp = this;
+        std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 	bool firstline = true;
 
 	while (tmp != NULL)
@@ -697,7 +680,7 @@ wxString Cell::ToTeX()
 wxString Cell::ListToTeX()
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -728,7 +711,7 @@ wxString Cell::ListToMathML(bool startofline)
 
   // If the region to export contains linebreaks or labels we put it into a table.
   bool needsTable = false;
-  Cell *temp = this;
+  std::shared_ptr<Cell> temp(this);
   while (temp)
   {
     if (temp->HardLineBreak())
@@ -740,7 +723,7 @@ wxString Cell::ListToMathML(bool startofline)
     temp = temp->m_next;
   }
 
-  temp = this;
+  temp = std::shared_ptr<Cell>(this);
   // If the list contains multiple cells we wrap them in a <mrow> in order to
   // group them into a single object.
   bool multiCell = (temp->m_next != NULL);
@@ -753,11 +736,11 @@ wxString Cell::ListToMathML(bool startofline)
       retval += wxT("</mrow>");
 
     // Handle linebreaks
-    if ((temp != this) && (temp->HardLineBreak()))
+    if ((temp.get() != this) && (temp->HardLineBreak()))
       retval += wxT("</mtd></mlabeledtr>\n<mlabeledtr columnalign=\"left\"><mtd>");
 
     // If a linebreak isn't followed by a label we need to introduce an empty one.
-    if ((((temp->HardLineBreak()) || (startofline && (this == temp))) &&
+    if ((((temp->HardLineBreak()) || (startofline && (this == temp.get()))) &&
          ((temp->GetStyle() != TS_LABEL) && (temp->GetStyle() != TS_USERLABEL))) && (needsTable))
       retval += wxT("<mtext></mtext></mtd><mtd>");
 
@@ -909,7 +892,7 @@ wxString Cell::ListToOMML(bool WXUNUSED(startofline))
   // If the region to export contains linebreaks or labels we put it into a table.
   // Export all cells
 
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
   while (tmp != NULL)
   {
     wxString token = tmp->ToOMML();
@@ -936,7 +919,7 @@ wxString Cell::ListToOMML(bool WXUNUSED(startofline))
 wxString Cell::ListToRTF(bool startofline)
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -1007,7 +990,7 @@ wxString Cell::ListToXML()
   bool highlight = false;
 
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
 
   while (tmp != NULL)
   {
@@ -1143,18 +1126,18 @@ void Cell::ResetData()
       (*it)->ResetData();
 }
 
-Cell *Cell::first()
+std::shared_ptr<Cell>  Cell::first()
 {
-  Cell *tmp = this;
-  while (tmp->m_previous)
-    tmp = tmp->m_previous;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
+  while (tmp->GetPrevious().get())
+    tmp = tmp->GetPrevious();
 
   return tmp;
 }
 
-Cell *Cell::last()
+std::shared_ptr<Cell> Cell::last()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
   while (tmp->m_next)
     tmp = tmp->m_next;
 
@@ -1169,7 +1152,7 @@ void Cell::Unbreak()
   m_isBrokenIntoLines = false;
   m_nextToDraw = m_next;
   if (m_nextToDraw != NULL)
-    m_nextToDraw->m_previousToDraw = this;
+    m_nextToDraw->m_previousToDraw = std::shared_ptr<Cell>(this);
 
   // Unbreak the inner cells, too
   std::list<std::shared_ptr<Cell>> innerCells = GetInnerCells();
@@ -1180,7 +1163,7 @@ void Cell::Unbreak()
 
 void Cell::UnbreakList()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = std::shared_ptr<Cell>(this);
   while (tmp != NULL)
   {
     tmp->Unbreak();

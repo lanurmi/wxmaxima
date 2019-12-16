@@ -63,20 +63,20 @@ std::list<std::shared_ptr<Cell>> DiffCell::GetInnerCells()
 }
 
 
-void DiffCell::SetDiff(Cell *diff)
+void DiffCell::SetDiff(std::shared_ptr<Cell> diff)
 {
   if (diff == NULL)
     return;
-  m_diffCell = std::shared_ptr<Cell>(diff);
+  m_diffCell = diff;
 
   m_diffCell->m_SuppressMultiplicationDot = true;
 }
 
-void DiffCell::SetBase(Cell *base)
+void DiffCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_baseCell = std::shared_ptr<Cell>(base);
+  m_baseCell = base;
 }
 
 void DiffCell::RecalculateWidths(int fontsize)
@@ -123,7 +123,7 @@ wxString DiffCell::ToString()
 {
   if (m_isBrokenIntoLines)
     return wxEmptyString;
-  Cell *tmp = m_baseCell->m_next;
+  std::shared_ptr<Cell> tmp = m_baseCell->m_next;
   wxString s = wxT("'diff(");
   if (tmp != NULL)
     s += tmp->ListToString();
@@ -136,7 +136,7 @@ wxString DiffCell::ToMatlab()
 {
   if (m_isBrokenIntoLines)
 	return wxEmptyString;
-  Cell *tmp = m_baseCell->m_next;
+  std::shared_ptr<Cell> tmp = m_baseCell->m_next;
   wxString s = wxT("'diff(");
   if (tmp != NULL)
 	s += tmp->ListToMatlab();

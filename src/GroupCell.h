@@ -121,9 +121,9 @@ public:
     Must be kept in GroupCell as on deletion a GroupCell will unlink itself from
     this pointer.
    */
-  GroupCell *GetLastWorkingGroup() const
+  std::shared_ptr<GroupCell> GetLastWorkingGroup() const
   {
-    return dynamic_cast<GroupCell *>(m_cellPointers->m_lastWorkingGroup);
+    return dynamic_cast<std::shared_ptr<GroupCell> >(m_cellPointers->m_lastWorkingGroup);
   }
 
   /*! Marks the cell that is under the mouse pointer.
@@ -131,7 +131,7 @@ public:
     Is kept in GroupCell so every GroupCell can decide it is no more under the pointer
     once it has been deleted from the worksheet.
    */
-  void CellUnderPointer(GroupCell *cell);
+  void CellUnderPointer(std::shared_ptr<GroupCell> cell);
 
   /*! Returns the tooltip for the element at the position point.
 
@@ -148,7 +148,7 @@ public:
 
   void SetCellStyle(int style);
 
-  void SetGroup(Cell *parent) override; // setting parent for all mathcells in GC
+  void SetGroup(std::shared_ptr<Cell> parent) override; // setting parent for all mathcells in GC
 
   // selection methods
   void SelectInner(const wxRect &rect, Cell **first, Cell **last) override;
@@ -167,8 +167,8 @@ public:
   // cppcheck-suppress functionConst
   bool SetEditableContent(wxString text);
 
-  EditorCell *GetEditable() const; // returns pointer to editor (if there is one)
-  void AppendOutput(Cell *cell);
+  std::shared_ptr<EditorCell> GetEditable() const; // returns pointer to editor (if there is one)
+  void AppendOutput(std::shared_ptr<Cell> cell);
 
   /*! Remove all output cells attached to this one
 
@@ -195,7 +195,7 @@ public:
 
   wxString ToTeXCodeCell(wxString imgDir, wxString filename, int *imgCounter);
 
-  static wxString ToTeXImage(Cell *tmp, wxString imgDir, wxString filename, int *imgCounter);
+  static wxString ToTeXImage(std::shared_ptr<Cell> tmp, wxString imgDir, wxString filename, int *imgCounter);
 
   wxString ToTeX() override;
 
@@ -211,21 +211,21 @@ public:
   wxRect HideRect();
 
   // raw manipulation of GC (should be protected)
-  void SetInput(Cell *input);
+  void SetInput(std::shared_ptr<Cell> input);
 
-  void SetOutput(Cell *output);
+  void SetOutput(std::shared_ptr<Cell> output);
 
-  void AppendInput(Cell *cell);
+  void AppendInput(std::shared_ptr<Cell> cell);
 
   static wxString TexEscapeOutputCell(wxString Input);
 
-  Cell *GetPrompt()
+  std::shared_ptr<Cell> GetPrompt()
     { return m_inputLabel.get(); }
 
-  EditorCell *GetInput() const
+  std::shared_ptr<EditorCell> GetInput() const
     {
       if (m_inputLabel != NULL)
-        return dynamic_cast<EditorCell *>(m_inputLabel.get()->m_next);
+        return std::dynamic_pointer_cast<EditorCell, Cell>(m_inputLabel->m_next);
       else
         return NULL;
     }
@@ -234,15 +234,15 @@ public:
 
     See also GetOutput();
   */
-  Cell *GetLabel()
+  std::shared_ptr<Cell> GetLabel()
     { return m_output.get(); }
 
   /*! Returns the list of cells the output consists of, starting after the label.
 
     See also GetLabel()
   */
-  Cell *GetOutput() const
-  { if (m_output == NULL) return NULL; else return m_output->m_next; }
+  std::shared_ptr<Cell> GetOutput() const
+    { if (m_output == NULL) return NULL; else return m_output->m_next; }
 
   //! Determine which rectangle is occupied by this GroupCell
   wxRect GetOutputRect() const
@@ -279,16 +279,16 @@ public:
     
     \retval true, if this action has changed the height of cells.
    */
-  bool BreakUpCells(Cell *cell);
+  bool BreakUpCells(std::shared_ptr<Cell> cell);
 
   //! Undo a BreakUpCells
-  void UnBreakUpCells(Cell *cell);
+  void UnBreakUpCells(std::shared_ptr<Cell> cell);
 
   //! Break this cell into lines
   void BreakLines();
 
   //! Break this cell into lines
-  void BreakLines(Cell *cell);
+  void BreakLines(std::shared_ptr<Cell> cell);
 
   /*! Reset the input label of the current cell.
 
@@ -314,7 +314,7 @@ public:
   }
 
   //! Get the tree of cells that got hidden by folding this cell
-  GroupCell *GetHiddenTree()
+  std::shared_ptr<GroupCell> GetHiddenTree()
   { return m_hiddenTree; }
 
   /*! Fold the current cell
@@ -323,10 +323,10 @@ public:
     - false, if the cell already was folded when this function was called
     - true, if the cell was folded by this function call.
   */
-  bool HideTree(GroupCell *tree);
+  bool HideTree(std::shared_ptr<GroupCell> tree);
 
   //! Unfold the current cell
-  GroupCell *UnhideTree();
+  std::shared_ptr<GroupCell> UnhideTree();
 
   /*! Unfold all that is needed to make the current cell seen
 
@@ -337,29 +337,29 @@ public:
   bool RevealHidden();
 
   //! Set the parent cell of hidden cells
-  void SetHiddenTreeParent(GroupCell *parent);
+  void SetHiddenTreeParent(std::shared_ptr<GroupCell> parent);
 
   /*! Fold this cell
 
     \return the cell's address if folding was successful, else NULL
   */
-  GroupCell *Fold(); // returns pointer to this or NULL if not successful
+  std::shared_ptr<GroupCell> Fold(); // returns pointer to this or NULL if not successful
   /*! Unfold this cell
 
     \return the last cell that was unfolded.
-  */  GroupCell *Unfold();
+  */  std::shared_ptr<GroupCell> Unfold();
 
   /*! Fold all cells
 
     \return the cell's address if folding was successful, else NULL
   */
-  GroupCell *FoldAll();
+  std::shared_ptr<GroupCell> FoldAll();
 
   /*! Unfold all cells
 
     \return the last unfolded cell's address if unfolding was successful, else NULL
   */
-  GroupCell *UnfoldAll();
+  std::shared_ptr<GroupCell> UnfoldAll();
 
   /*! Document structure: Can this cell type be part of the contents of comparedTo?
 
@@ -369,7 +369,7 @@ public:
   bool IsLesserGCType(int comparedTo) const;
 
   //! @}
-  bool IsMainInput(Cell *active) const;
+  bool IsMainInput(std::shared_ptr<Cell> active) const;
 
   //!  Return this cell's section- or image number.
   void Number(int &section, int &subsection, int &subsubsection, int &heading5, int &heading6, int &image);
@@ -402,7 +402,7 @@ public:
   bool Empty();
 
   //! Does this tree contain the cell "cell"?
-  bool Contains(GroupCell *cell);
+  bool Contains(std::shared_ptr<GroupCell> cell);
 
   //! A textual representation of this cell
   wxString ToString() override;
@@ -433,9 +433,10 @@ public:
   class HCaretCell: public wxAccessible
   {
   public:
-    explicit HCaretCell(GroupCell* group) : wxAccessible()
+    explicit HCaretCell(GroupCell* group) :
+      wxAccessible(),
+      m_group(group)
       {
-        m_group = group;
       }
     //! Describe the current cell to a Screen Reader
     virtual wxAccStatus GetDescription(int childId, wxString *description)
@@ -492,7 +493,7 @@ public:
     wxAccStatus GetRole (int childId, wxAccRole *role);
 
   private:
-	GroupCell *m_group;
+	std::shared_ptr<GroupCell> m_group;
   };
 #endif
 
@@ -500,15 +501,15 @@ public:
     
     \return The next GroupCell or NULL if there isn't any.
   */
-  GroupCell *UpdateYPosition();
+  std::shared_ptr<GroupCell> UpdateYPosition();
 
 protected:
   int m_labelWidth_cached;
   bool NeedsRecalculation() override;
   int GetInputIndent();
-  int GetLineIndent(Cell *cell);
-  GroupCell *m_hiddenTree; //!< here hidden (folded) tree of GCs is stored
-  GroupCell *m_hiddenTreeParent; //!< store linkage to the parent of the fold
+  int GetLineIndent(std::shared_ptr<Cell> cell);
+  std::shared_ptr<GroupCell> m_hiddenTree; //!< here hidden (folded) tree of GCs is stored
+  std::shared_ptr<GroupCell> m_hiddenTreeParent; //!< store linkage to the parent of the fold
   //! Which type this cell is of?
   GroupType m_groupType;
   //! The input label of this cell. Is followed by the input of the cell.
@@ -517,7 +518,7 @@ protected:
   std::shared_ptr<Cell> m_output;
   //! Is this cell folded (which hides its contents)?
   int m_mathFontSize;
-  Cell *m_lastInOutput;
+  std::shared_ptr<Cell> m_lastInOutput;
   static wxString m_lookalikeChars;
 private:
   //! Does this GroupCell automatically fill in the answer to questions?

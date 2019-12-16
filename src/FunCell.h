@@ -60,9 +60,9 @@ public:
 
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
-  void SetName(Cell *name);
+  void SetName(std::shared_ptr<Cell> name);
 
-  void SetArg(Cell *arg);
+  void SetArg(std::shared_ptr<Cell> arg);
 
   void RecalculateHeight(int fontsize) override;
 

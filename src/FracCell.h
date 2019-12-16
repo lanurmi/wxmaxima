@@ -73,10 +73,10 @@ public:
   }
 
   //! Set the nummerator for the fraction
-  void SetNum(Cell *num);
+  void SetNum(std::shared_ptr<Cell> num);
 
   //! Set the denominator of the fraction
-  void SetDenom(Cell *denom);
+  void SetDenom(std::shared_ptr<Cell> denom);
 
   //! Answers the question if this is an operator by returning "true".
   bool IsOperator() const override
@@ -111,7 +111,7 @@ protected:
   //! The denominator
   std::shared_ptr<Cell> m_denom;
   std::shared_ptr<TextCell> m_open1, m_open2, m_close1, m_close2, m_divide;
-  Cell *m_num_Last, *m_denom_Last;
+  std::shared_ptr<Cell> m_num_Last, m_denom_Last;
   //! Fractions in exponents are shown in their linear form.
   bool m_exponent;
   int m_fracStyle;

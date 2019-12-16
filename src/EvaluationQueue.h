@@ -64,10 +64,10 @@ private:
   //! The label the user has assigned to the current command.
   wxString m_userLabel;
   //! The groupCells in the evaluation Queue.
-  std::list<GroupCell *>m_queue;
+  std::list<std::shared_ptr<GroupCell>>m_queue;
 
   //! Adds all commands in commandString as separate tokens to the queue.
-  void AddTokens(GroupCell *cell);
+  void AddTokens(std::shared_ptr<GroupCell> cell);
 
   //! A list of answers provided by the user
   wxArrayString m_knownAnswers;
@@ -105,7 +105,7 @@ public:
   {};
 
   //! Is GroupCell gr part of the evaluation queue?
-  bool IsLastInQueue(GroupCell *gr)
+  bool IsLastInQueue(std::shared_ptr<GroupCell> gr)
   {
     if (m_queue.empty())
       return false;
@@ -114,16 +114,16 @@ public:
   }
 
   //! Is GroupCell gr part of the evaluation queue?
-  bool IsInQueue(GroupCell *gr) const;
+  bool IsInQueue(std::shared_ptr<GroupCell> gr) const;
 
   //! Adds a GroupCell to the evaluation queue.
-  void AddToQueue(GroupCell *gr);
+  void AddToQueue(std::shared_ptr<GroupCell> gr);
 
   //! Remove a GroupCell from the evaluation queue.
-  void Remove(GroupCell *gr);
+  void Remove(std::shared_ptr<GroupCell> gr);
   
   //! Adds all hidden cells attached to the GroupCell gr to the evaluation queue.
-  void AddHiddenTreeToQueue(GroupCell *gr);
+  void AddHiddenTreeToQueue(std::shared_ptr<GroupCell> gr);
 
   //! Removes the first command in the queue
   void RemoveFirst();
@@ -132,7 +132,7 @@ public:
 
     The command itself can be read out by issuing GetCommand();
    */
-  GroupCell *GetCell();
+  std::shared_ptr<GroupCell> GetCell();
 
   //! Is the queue empty?
   bool Empty() const;

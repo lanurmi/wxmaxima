@@ -79,11 +79,11 @@ std::list<std::shared_ptr<Cell>> SqrtCell::GetInnerCells()
   return innerCells;
 }
 
-void SqrtCell::SetInner(Cell *inner)
+void SqrtCell::SetInner(std::shared_ptr<Cell> inner)
 {
   if (inner == NULL)
     return;
-  m_innerCell = std::shared_ptr<Cell>(inner);
+  m_innerCell = inner;
 
   m_last = inner;
   if (m_last != NULL)

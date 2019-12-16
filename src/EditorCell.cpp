@@ -656,7 +656,7 @@ void EditorCell::RecalculateWidths(int fontsize)
 
 wxString EditorCell::ToHTML()
 {
-  EditorCell *tmp = this;
+  std::shared_ptr<EditorCell> tmp(this);
   wxString retval;
 
   while (tmp != NULL)
@@ -702,7 +702,7 @@ wxString EditorCell::ToHTML()
       else
         retval += text;
     }
-    tmp = dynamic_cast<EditorCell *>(tmp->m_next);
+    tmp = std::dynamic_pointer_cast<EditorCell, Cell>(tmp->m_next);
   }
   return retval;
 }

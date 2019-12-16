@@ -1146,14 +1146,14 @@ public:
 
     NULL means: No cell is selected.
   */
-  Cell *GetSelectionStart()
+  std::shared_ptr<Cell> GetSelectionStart()
   { return m_cellPointers.m_selectionStart; }
 
   /*! Return the last of the currently selected cells.
 
     NULL means: No cell is selected.
   */
-  Cell *GetSelectionEnd()
+  std::shared_ptr<Cell> GetSelectionEnd()
   { return m_cellPointers.m_selectionEnd; }
 
   //! Select the cell sel

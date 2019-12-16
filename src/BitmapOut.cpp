@@ -82,11 +82,11 @@ bool BitmapOut::Layout(long int maxSize)
   }
   else
   {
-    GroupCell *tmp = dynamic_cast<GroupCell *>(m_tree.get());
+    std::shared_ptr<GroupCell> tmp = std::dynamic_pointer_cast<GroupCell, Cell>(m_tree);
     while (tmp != NULL)
     {
       tmp->Recalculate();
-      tmp = dynamic_cast<GroupCell *>(tmp->m_next);
+      tmp = std::dynamic_pointer_cast<GroupCell, Cell>(tmp->m_next);
     }
   }
 
@@ -153,7 +153,7 @@ void BitmapOut::RecalculateHeight()
   wxConfig::Get()->Read(wxT("fontSize"), &fontsize);
   int mfontsize = fontsize;
   wxConfig::Get()->Read(wxT("mathfontsize"), &mfontsize);
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
 
   while (tmp != NULL)
   {
@@ -171,7 +171,7 @@ void BitmapOut::RecalculateWidths()
   int mfontsize = fontsize;
   wxConfig::Get()->Read(wxT("mathfontsize"), &mfontsize);
 
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
 
   while (tmp != NULL)
   {
@@ -185,7 +185,7 @@ void BitmapOut::BreakLines()
   int fullWidth = BM_FULL_WIDTH * m_scale;
   int currentWidth = 0;
 
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
 
   while (tmp != NULL)
   {
@@ -208,7 +208,7 @@ void BitmapOut::BreakLines()
 
 void BitmapOut::GetMaxPoint(int *width, int *height) const
 {
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
   int currentHeight = 0;
   int currentWidth = 0;
   *width = 0;
@@ -239,7 +239,7 @@ void BitmapOut::GetMaxPoint(int *width, int *height) const
 void BitmapOut::Draw()
 {
   (*m_configuration)->ClipToDrawRegion(false);
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
 
   wxString bgColStr = wxT("white");
   wxConfig::Get()->Read(wxT("Style/Background/color"), &bgColStr);
@@ -342,7 +342,7 @@ bool BitmapOut::ToClipboard()
 
 void BitmapOut::BreakUpCells()
 {
-  Cell *tmp = m_tree.get();
+  std::shared_ptr<Cell> tmp = m_tree;
   int fontsize = 12;
   wxConfig::Get()->Read(wxT("fontSize"), &fontsize);
   int mfontsize = fontsize;

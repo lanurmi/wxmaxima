@@ -8,7 +8,6 @@ add_custom_target(pdf)
 add_custom_target(docx)
 add_custom_target(odt)
 add_custom_target(epub)
-add_custom_target(html ALL)
 
 function(generate_wxmaxima_documentation FORMAT PANDOC_TEXSELECT_OPTION)
     add_custom_command(

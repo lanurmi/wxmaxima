@@ -39,8 +39,8 @@ ExptCell::ExptCell(Cell *parent, Configuration **config, CellPointers *cellPoint
   m_close(new TextCell(parent, config, cellPointers, ")")),
   m_exp(new TextCell(parent, config, cellPointers, "^"))
 {
-  m_base_last = m_baseCell.get();
-  m_expt_last = m_exptCell.get();
+  m_base_last = m_baseCell;
+  m_expt_last = m_exptCell;
   m_isMatrix = false;
   m_open->DontEscapeOpeningParenthesis();
 }
@@ -97,11 +97,11 @@ std::list<std::shared_ptr<Cell>> ExptCell::GetInnerCells()
 }
 
 
-void ExptCell::SetPower(Cell *power)
+void ExptCell::SetPower(std::shared_ptr<Cell> power)
 {
   if (power == NULL)
     return;
-  m_exptCell = std::shared_ptr<Cell>(power);
+  m_exptCell = power;
 
   if (!m_exptCell->IsCompound())
   {
@@ -115,11 +115,11 @@ void ExptCell::SetPower(Cell *power)
       m_expt_last = m_expt_last->m_next;
 }
 
-void ExptCell::SetBase(Cell *base)
+void ExptCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_baseCell = std::shared_ptr<Cell>(base);
+  m_baseCell = base;
 
   m_base_last = base;
   if (m_base_last != NULL)
@@ -266,27 +266,27 @@ bool ExptCell::BreakUp()
   if (!m_isBrokenIntoLines)
   {
     m_isBrokenIntoLines = true;
-    m_baseCell->m_previousToDraw = this;
+    m_baseCell->m_previousToDraw = std::shared_ptr<Cell>(this);
     wxASSERT_MSG(m_base_last != NULL, _("Bug: No last cell in the base of an exptCell!"));
     if (m_base_last != NULL)
     {
-      m_base_last->m_nextToDraw = m_exp.get();
+      m_base_last->m_nextToDraw = m_exp;
       m_exp->m_previousToDraw = m_base_last;
     }
-    m_exp->m_nextToDraw = m_open.get();
-    m_open->m_previousToDraw = m_exp.get();
-    m_open->m_nextToDraw = m_exptCell.get();
-    m_exptCell->m_previousToDraw = m_open.get();
+    m_exp->m_nextToDraw = m_open;
+    m_open->m_previousToDraw = m_exp;
+    m_open->m_nextToDraw = m_exptCell;
+    m_exptCell->m_previousToDraw = m_open;
     wxASSERT_MSG(m_expt_last != NULL, _("Bug: No last cell in an exponent of an exptCell!"));
     if (m_expt_last != NULL)
     {
-      m_expt_last->m_nextToDraw = m_close.get();
+      m_expt_last->m_nextToDraw = m_close;
       m_close->m_previousToDraw = m_expt_last;
     }
     m_close->m_nextToDraw = m_nextToDraw;
     if (m_nextToDraw != NULL)
-      m_nextToDraw->m_previousToDraw = m_close.get();
-    m_nextToDraw = m_baseCell.get();
+      m_nextToDraw->m_previousToDraw = m_close;
+    m_nextToDraw = m_baseCell;
     ResetData();    
     m_height = wxMax(m_baseCell->GetMaxHeight(), m_open->GetMaxHeight());
     m_center = wxMax(m_baseCell->GetMaxCenter(), m_open->GetMaxCenter());

@@ -47,9 +47,9 @@ public:
 
   virtual void Draw(wxPoint point) override;
 
-  void AddNewCell(Cell *cell)
+  void AddNewCell(std::shared_ptr<Cell> cell)
   {
-    m_cells.push_back(std::shared_ptr<Cell>(cell));
+    m_cells.push_back(cell);
   }
 
   void NewRow()

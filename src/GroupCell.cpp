@@ -44,14 +44,11 @@ GroupCell::GroupCell(Configuration **config, GroupType groupType, CellPointers *
   Cell(this, config, cellPointers)
 {
   m_numberedAnswersCount = 0;
-  m_next = m_previous = m_nextToDraw = m_previousToDraw = NULL;
   m_autoAnswer = false;
   m_cellsInGroup = 1;
   m_inEvaluationQueue = false;
   m_lastInEvaluationQueue = false;
   m_labelWidth_cached = 0;
-  m_hiddenTree = NULL;
-  m_hiddenTreeParent = NULL;
   m_outputRect.x = -1;
   m_outputRect.y = -1;
   m_outputRect.width = 0;
@@ -158,10 +155,8 @@ GroupCell::GroupCell(const GroupCell &cell):
   GroupCell(cell.m_configuration, cell.m_groupType, cell.m_cellPointers, wxEmptyString)
 {
   CopyCommonData(cell);
-  if (cell.m_inputLabel)
-    SetInput(cell.m_inputLabel->CopyList());
-  if (cell.m_output)
-    SetOutput(cell.m_output->CopyList());
+  SetInput(cell.m_inputLabel->CopyList());
+  SetOutput(cell.m_output->CopyList());
   Hide(cell.m_isHidden);
   AutoAnswer(cell.m_autoAnswer);
 }

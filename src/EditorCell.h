@@ -116,8 +116,8 @@ public:
   void AutoAnswer(bool autoAnswer){m_autoAnswer = autoAnswer;}
 
   //! Which cell the blinking cursor is in?
-  EditorCell *GetActiveCell() const
-  { return dynamic_cast<EditorCell *>(m_cellPointers->m_activeCell); }
+  std::shared_ptr<EditorCell> GetActiveCell() const
+    { return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers->m_activeCell); }
 
   /*! Tells where the mouse selection has started.
 

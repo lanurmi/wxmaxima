@@ -116,15 +116,15 @@ class Cell
   class CellPointers
   {
   public:
-    void ScrollToCell(Cell *cell){m_cellToScrollTo = cell;}
-    Cell *CellToScrollTo(){return m_cellToScrollTo;}
+    void ScrollToCell(std::shared_ptr<Cell> cell){m_cellToScrollTo = cell;}
+    std::shared_ptr<Cell> CellToScrollTo(){return m_cellToScrollTo;}
     explicit CellPointers(wxScrolledCanvas *mathCtrl);
     /*! Returns the cell maxima currently works on. NULL if there isn't such a cell.
       
       \param resortToLast true = if we already have set the cell maxima works on to NULL
       use the last cell maxima was known to work on.
     */
-    Cell *GetWorkingGroup(bool resortToLast = false)
+    std::shared_ptr<Cell> GetWorkingGroup(bool resortToLast = false)
       {
         if ((m_workingGroup != NULL) || (!resortToLast))
           return m_workingGroup;
@@ -133,7 +133,7 @@ class Cell
       }
 
     //! Sets the cell maxima currently works on. NULL if there isn't such a cell.
-    void SetWorkingGroup(Cell *group)
+    void SetWorkingGroup(std::shared_ptr<Cell> group)
       {
         if(group != NULL)
           m_lastWorkingGroup = group;
@@ -156,47 +156,47 @@ class Cell
       //! Is the list of errors empty?
       bool Empty() const {return m_errorList.empty();}
       //! Remove one specific GroupCell from the list of errors
-      void Remove(Cell * cell){m_errorList.remove(cell);}
+      void Remove(std::shared_ptr<Cell>  cell){m_errorList.remove(cell);}
       //! Does the list of GroupCell with errors contain cell?
-      bool Contains(Cell * cell);
+      bool Contains(std::shared_ptr<Cell>  cell);
       //! Mark this GroupCell as containing errors
-      void Add(Cell * cell){m_errorList.push_back(cell);}
+      void Add(std::shared_ptr<Cell>  cell){m_errorList.push_back(cell);}
       //! The first GroupCell with error that is still in the list
-      Cell *FirstError(){if(m_errorList.empty())return NULL; else return m_errorList.front();}
+      std::shared_ptr<Cell> FirstError(){if(m_errorList.empty())return NULL; else return m_errorList.front();}
       //! The last GroupCell with errors in the list
-      Cell *LastError(){if(m_errorList.empty())return NULL; else return m_errorList.back();}
+      std::shared_ptr<Cell> LastError(){if(m_errorList.empty())return NULL; else return m_errorList.back();}
       //! Empty the list of GroupCells with errors
       void Clear(){m_errorList.clear();}
     private:
       //! A list of GroupCells that contain errors
-      std::list<Cell *> m_errorList;
+      std::list<std::shared_ptr<Cell> > m_errorList;
     };
 
     //! The list of cells maxima has complained about errors in
     ErrorList m_errorList;
     //! The EditorCell the mouse selection has started in
-    Cell *m_cellMouseSelectionStartedIn;
+    std::shared_ptr<Cell> m_cellMouseSelectionStartedIn;
     //! The EditorCell the keyboard selection has started in
-    Cell *m_cellKeyboardSelectionStartedIn;
+    std::shared_ptr<Cell> m_cellKeyboardSelectionStartedIn;
     //! The EditorCell the search was started in
-    Cell *m_cellSearchStartedIn;
+    std::shared_ptr<Cell> m_cellSearchStartedIn;
     //! Which cursor position incremental search has started at?
     int m_indexSearchStartedAt;
     //! Which cell the blinking cursor is in?
-    Cell *m_activeCell;
+    std::shared_ptr<Cell> m_activeCell;
     //! The GroupCell that is under the mouse pointer 
-    Cell *m_groupCellUnderPointer;
+    std::shared_ptr<Cell> m_groupCellUnderPointer;
     //! The EditorCell that contains the currently active question from maxima 
-    Cell *m_answerCell;
+    std::shared_ptr<Cell> m_answerCell;
     //! The last group cell maxima was working on.
-    Cell *m_lastWorkingGroup;
+    std::shared_ptr<Cell> m_lastWorkingGroup;
     //! The textcell the text maxima is sending us was ending in.
-    Cell *m_currentTextCell;
+    std::shared_ptr<Cell> m_currentTextCell;
     /*! The group cell maxima is currently working on.
 
       NULL means that maxima isn't currently evaluating a cell.
     */
-    Cell *m_workingGroup;
+    std::shared_ptr<Cell> m_workingGroup;
     /*! The currently selected string. 
 
       Since this string is defined here it is available in every editor cell
@@ -227,7 +227,7 @@ class Cell
     
       See also m_hCaretPositionStart and m_selectionEnd
     */
-    Cell *m_selectionStart;
+    std::shared_ptr<Cell> m_selectionStart;
     /*! The last cell of the currently selected range of groupCells.
     
       NULL, when no GroupCells are selected and NULL, if only stuff inside a GroupCell
@@ -238,7 +238,7 @@ class Cell
     */
 
     //! The cell currently under the mouse pointer
-    Cell *m_cellUnderPointer;
+    std::shared_ptr<Cell> m_cellUnderPointer;
   
     /*! The last cell of the currently selected range of Cells.
     
@@ -248,7 +248,7 @@ class Cell
     
       See also m_hCaretPositionStart, m_hCaretPositionEnd and m_selectionStart.
     */
-    Cell *m_selectionEnd;
+    std::shared_ptr<Cell> m_selectionEnd;
     WX_DECLARE_VOIDPTR_HASH_MAP( int, SlideShowTimersList);
     SlideShowTimersList m_slideShowTimers;
 
@@ -258,7 +258,7 @@ class Cell
     bool m_scrollToCell;
   private:
     //! If m_scrollToCell = true: Which cell do we need to scroll to?
-    Cell *m_cellToScrollTo;
+    std::shared_ptr<Cell> m_cellToScrollTo;
     //! The function to call if an animation has to be stepped.
     wxScrolledCanvas *m_mathCtrl;
     //! The image counter for saving .wxmx files
@@ -273,7 +273,7 @@ class Cell
     This method is purely virtual, which means every child class has to define
     its own Copy() method.
    */
-  virtual Cell *Copy() = 0;
+  virtual Cell* Copy() = 0;
   
   /*! Scale font sizes and line widths according to the zoom factor.
 
@@ -288,14 +288,14 @@ class Cell
   //! Accessibility: How many childs of this cell GetChild() can retrieve?
   virtual wxAccStatus GetChildCount (int *childCount);
   //! Accessibility: Retrieve a child cell. childId=0 is the current cell
-  virtual wxAccStatus GetChild (int childId, Cell **child);
+  virtual wxAccStatus GetChild (int childId, std::shared_ptr<Cell> *child);
   //! Accessibility: Does this or a child cell currently own the focus?
   virtual wxAccStatus GetFocus (int *childId, wxAccessible **child);
   //! Accessibility: Where is this cell to be found?
   virtual wxAccStatus GetLocation (wxRect &rect, int elementId);
   //! Is pt inside this cell or a child cell?
   wxAccStatus HitTest (const wxPoint &pt,
-                       int *childId, Cell **childObject);
+                       int *childId, std::shared_ptr<Cell> *childObject);
   //! Accessibility: What is the contents of this cell?
   virtual wxAccStatus GetValue (int childId, wxString *strValue);
   virtual wxAccStatus GetRole (int childId, wxAccRole *role);
@@ -343,7 +343,7 @@ class Cell
     
     \param p_next The cell that will be appended to the list.
    */
-  void AppendCell(Cell *p_next);
+  void AppendCell(std::shared_ptr<Cell> p_next);
 
   //! 0 for ordinary cells, 1 for slide shows and diagrams displayed with a 1-pixel border
   int m_imageBorderWidth;
@@ -630,10 +630,10 @@ class Cell
   { return wxEmptyString; }
 
   //! Get the first cell in this list of cells
-  Cell *first();
+  std::shared_ptr<Cell> first();
 
   //! Get the last cell in this list of cells
-  Cell *last();
+  std::shared_ptr<Cell> last();
 
   /*! Select a rectangle using the mouse
 
@@ -641,25 +641,25 @@ class Cell
     \param first Returns the first cell of the rectangle
     \param last Returns the last cell of the rectangle
    */
-  void SelectRect(const wxRect &rect, Cell **first, Cell **last);
+  void SelectRect(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last);
 
   /*! The top left of the rectangle the mouse has selected
 
     \param rect The rectangle the mouse selected
     \param first Returns the first cell of the rectangle
    */
-  void SelectFirst(const wxRect &rect, Cell **first);
+  void SelectFirst(const wxRect &rect, std::shared_ptr<Cell> *first);
 
   /*! The bottom right of the rectangle the mouse has selected
 
     \param rect The rectangle the mouse selected
     \param last Returns the last cell of the rectangle
    */
-  void SelectLast(const wxRect &rect, Cell **last);
+  void SelectLast(const wxRect &rect, std::shared_ptr<Cell> *last);
 
   /*! Select the cells inside this cell described by the rectangle rect.
   */
-  virtual void SelectInner(const wxRect &rect, Cell **first, Cell **last);
+  virtual void SelectInner(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last);
 
   //! Is this cell an operator?
   virtual bool IsOperator() const;
@@ -670,7 +670,7 @@ class Cell
   { return false; }
 
   //! Returns the group cell this cell belongs to
-  Cell *GetGroup();
+  std::shared_ptr<Cell> GetGroup();
 
   //! For the bitmap export we sometimes want to know how big the result will be...
   struct SizeInMillimeters
@@ -774,13 +774,14 @@ class Cell
     Reads NULL, if this is the last cell of the list. See also m_nextToDraw, m_previous
     and m_previousToDraw
    */
-  Cell *m_next;
+  std::shared_ptr<Cell> m_next;
   /*! The previous cell in the list of cells
     
     Reads NULL, if this is the first cell of the list. See also m_previousToDraw, 
     m_nextToDraw and m_next
    */
-  Cell *m_previous;
+  std::weak_ptr<Cell> m_previous;
+  std::shared_ptr<Cell> GetPrevious() const {return m_previous.lock();}
   /*! The next cell to draw
     
     For cells that are drawn as an atomic construct this pointer points 
@@ -801,7 +802,7 @@ class Cell
 
     See also m_previousToDraw and m_next.
    */
-  Cell *m_nextToDraw;
+  std::shared_ptr<Cell> m_nextToDraw;
   /*! The previous cell to draw
     
     Normally cells are drawn one by one. But if a function is broken into several lines 
@@ -809,7 +810,8 @@ class Cell
     the function name and its arguments as individual list elements so they can be drawn
     separately (and on separate lines).
    */
-  Cell *m_previousToDraw;
+  std::weak_ptr<Cell> m_previousToDraw;
+  std::shared_ptr<Cell> GetPreviousToDraw() const {return m_previousToDraw.lock();}
   bool m_bigSkip;
   /*! true means:  This cell is broken into two or more lines.
     
@@ -848,7 +850,7 @@ class Cell
   bool IsEditable(bool input = false) const
   {
     return (m_type == MC_TYPE_INPUT &&
-            m_previous != NULL && m_previous->m_type == MC_TYPE_MAIN_PROMPT)
+            !GetPrevious().get() && GetPrevious()->m_type == MC_TYPE_MAIN_PROMPT)
            || (!input && IsComment());
   }
 
@@ -911,17 +913,17 @@ class Cell
     the cell's SetGroup is called.
    */
   
-  virtual void SetParent(Cell *parent)
+  virtual void SetParent(std::shared_ptr<Cell> parent)
     { m_parent = parent; }
 
   /*! Define which Cell is the GroupCell this list of cells belongs to
 
     Also automatically sets this cell as the "parent" of all cells of the list.
    */
-  void SetGroupList(Cell *group);
+  void SetGroupList(std::shared_ptr<Cell> group);
 
   //! Define which Sell is the GroupCell this list of cells belongs to
-  virtual void SetGroup(Cell *group);
+  virtual void SetGroup(std::shared_ptr<Cell> group);
   
   virtual void SetStyle(TextStyle style)
   {
@@ -941,7 +943,7 @@ class Cell
     
     Used by Cell::Copy() when the parameter <code>all</code> is true.
   */
-  Cell *CopyList();
+  std::shared_ptr<Cell> CopyList();
 
   /*! Do we want to begin this cell with a center dot if it is part of a product?
 
@@ -993,7 +995,7 @@ protected:
   Cell *m_group;
 
   //! The cell that contains the current cell
-  Cell *m_parent;
+  std::shared_ptr<Cell> m_parent;
 
   //! Does this cell begin with a forced page break?
   bool m_breakPage;

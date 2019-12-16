@@ -81,25 +81,25 @@ std::list<std::shared_ptr<Cell>> SumCell::GetInnerCells()
   return innerCells;
 }
 
-void SumCell::SetOver(Cell *over)
+void SumCell::SetOver(std::shared_ptr<Cell> over)
 {
   if (over == NULL)
     return;
-  m_over = std::shared_ptr<Cell>(over);
+  m_over = over;
 }
 
-void SumCell::SetBase(Cell *base)
+void SumCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_base = std::shared_ptr<Cell>(base);
+  m_base = base;
 }
 
-void SumCell::SetUnder(Cell *under)
+void SumCell::SetUnder(std::shared_ptr<Cell> under)
 {
   if (under == NULL)
     return;
-  m_under = std::shared_ptr<Cell>(under);
+  m_under = under;
 }
 
 void SumCell::RecalculateWidths(int fontsize)
@@ -290,7 +290,7 @@ wxString SumCell::ToString()
     s = wxT("product(");
   s += m_base->ListToString();
 
-  Cell *tmp = m_under.get();
+  std::shared_ptr<Cell> tmp = m_under;
   wxString var = tmp->ToString();
   wxString from;
   tmp = tmp->m_next;
@@ -318,7 +318,7 @@ wxString SumCell::ToMatlab()
 	s = wxT("product(");
   s += m_base->ListToMatlab();
 
-  Cell *tmp = m_under.get();
+  std::shared_ptr<Cell> tmp = m_under;
   wxString var = tmp->ToMatlab();
   wxString from;
   tmp = tmp->m_next;

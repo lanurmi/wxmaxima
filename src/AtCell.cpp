@@ -61,14 +61,14 @@ std::list<std::shared_ptr<Cell>> AtCell::GetInnerCells()
   return innerCells;
 }
 
-void AtCell::SetIndex(Cell *index)
+void AtCell::SetIndex(std::shared_ptr<Cell> index)
 {
   if (index == NULL)
     return;
   m_indexCell = std::shared_ptr<Cell>(index);
 }
 
-void AtCell::SetBase(Cell *base)
+void AtCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;

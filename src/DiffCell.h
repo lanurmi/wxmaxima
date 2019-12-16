@@ -37,9 +37,9 @@ public:
   
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
-  void SetBase(Cell *base);
+  void SetBase(std::shared_ptr<Cell> base);
 
-  void SetDiff(Cell *diff);
+  void SetDiff(std::shared_ptr<Cell> diff);
 
   void RecalculateHeight(int fontsize) override;
 

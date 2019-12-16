@@ -83,27 +83,27 @@ std::list<std::shared_ptr<Cell>> LimitCell::GetInnerCells()
   return innerCells;
 }
 
-void LimitCell::SetName(Cell *name)
+void LimitCell::SetName(std::shared_ptr<Cell> name)
 {
   if (name == NULL)
     return;
-  m_name = std::shared_ptr<Cell>(name);
+  m_name = name;
   m_name_last = name;
   while(m_name_last->m_next != NULL)
     m_name_last = m_name_last->m_next;
 }
 
-void LimitCell::SetBase(Cell *base)
+void LimitCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_base = std::shared_ptr<Cell>(base);
+  m_base = base;
   m_base_last = base;
   while(m_base_last->m_next != NULL)
     m_base_last = m_base_last->m_next;
 }
 
-void LimitCell::SetUnder(Cell *under)
+void LimitCell::SetUnder(std::shared_ptr<Cell> under)
 {
   if (under == NULL)
     return;

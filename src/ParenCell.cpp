@@ -78,11 +78,11 @@ std::list<std::shared_ptr<Cell>> ParenCell::GetInnerCells()
   return innerCells;
 }
 
-void ParenCell::SetInner(Cell *inner, CellType type)
+void ParenCell::SetInner(std::shared_ptr<Cell>  inner, CellType type)
 {
   if (inner == NULL)
     return;
-  m_innerCell = std::shared_ptr<Cell>(inner);
+  m_innerCell = inner;
 
   m_type = type;
   // Tell the first of our inter cell not to begin with a multiplication dot.

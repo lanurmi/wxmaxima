@@ -52,11 +52,11 @@ public:
 
   virtual void Draw(wxPoint point) override;
 
-  void SetBase(Cell *base);
+  void SetBase(std::shared_ptr<Cell> base);
 
-  void SetUnder(Cell *under);
+  void SetUnder(std::shared_ptr<Cell> under);
 
-  void SetName(Cell *name);
+  void SetName(std::shared_ptr<Cell> name);
 
   wxString ToString() override;
 
@@ -80,9 +80,9 @@ protected:
   std::shared_ptr<TextCell> m_comma;
   std::shared_ptr<Cell> m_under;
   std::shared_ptr<TextCell> m_close;
-  Cell *m_name_last;
-  Cell *m_base_last;
-  Cell *m_under_last;
+  std::shared_ptr<Cell> m_name_last;
+  std::shared_ptr<Cell> m_base_last;
+  std::shared_ptr<Cell> m_under_last;
 };
 
 #endif // LIMITCELL_H

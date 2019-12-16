@@ -65,7 +65,7 @@ public:
 
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
 
-  void SetInner(Cell *inner);
+  void SetInner(std::shared_ptr<Cell> inner);
 
   bool BreakUp() override;
 
@@ -97,7 +97,7 @@ protected:
   //! The cell containing the closing parenthesis
   std::shared_ptr<TextCell> m_close;
   //! The last element of m_innerCell
-  Cell *m_last;
+  std::shared_ptr<Cell> m_last;
 };
 
 #endif // ABSCELL_H

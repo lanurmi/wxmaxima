@@ -61,7 +61,7 @@ std::list<std::shared_ptr<Cell>> FunCell::GetInnerCells()
   return innerCells;
 }
 
-void FunCell::SetName(Cell *name)
+void FunCell::SetName(std::shared_ptr<Cell> name)
 {
   if (name == NULL)
     return;
@@ -69,7 +69,7 @@ void FunCell::SetName(Cell *name)
   name->SetStyle(TS_FUNCTION);
 }
 
-void FunCell::SetArg(Cell *arg)
+void FunCell::SetArg(std::shared_ptr<Cell> arg)
 {
   if (arg == NULL)
     return;
@@ -193,13 +193,13 @@ bool FunCell::BreakUp()
   if (!m_isBrokenIntoLines)
   {
     m_isBrokenIntoLines = true;
-    m_nameCell->m_previousToDraw = this;
-    m_nameCell->m_nextToDraw = m_argCell.get();
-    m_argCell->m_previousToDraw = m_nameCell.get();
+    m_nameCell->m_previousToDraw = std::shared_ptr<Cell>(this);
+    m_nameCell->m_nextToDraw = m_argCell;
+    m_argCell->m_previousToDraw = m_nameCell;
     m_argCell->m_nextToDraw = m_nextToDraw;
     if (m_nextToDraw != NULL)
-      m_nextToDraw->m_previousToDraw = m_argCell.get();
-    m_nextToDraw = m_nameCell.get();
+      m_nextToDraw->m_previousToDraw = m_argCell;
+    m_nextToDraw = m_nameCell;
     m_width = 0;
     ResetData();    
     return true;

@@ -61,18 +61,18 @@ std::list<std::shared_ptr<Cell>> SubCell::GetInnerCells()
 }
 
 
-void SubCell::SetIndex(Cell *index)
+void SubCell::SetIndex(std::shared_ptr<Cell> index)
 {
   if (index == NULL)
     return;
-  m_indexCell = std::shared_ptr<Cell>(index);
+  m_indexCell = index;
 }
 
-void SubCell::SetBase(Cell *base)
+void SubCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_baseCell = std::shared_ptr<Cell>(base);
+  m_baseCell = base;
 }
 
 void SubCell::RecalculateWidths(int fontsize)

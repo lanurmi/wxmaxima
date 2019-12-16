@@ -97,7 +97,7 @@ protected:
 
   void Draw();
 
-  std::unique_ptr<Cell> m_tree;
+  std::shared_ptr<Cell> m_tree;
 
   double GetRealHeight() const;
 

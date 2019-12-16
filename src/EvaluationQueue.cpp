@@ -49,16 +49,16 @@ void EvaluationQueue::Clear()
   m_workingGroupChanged = false;
 }
 
-bool EvaluationQueue::IsInQueue(GroupCell *gr) const
+bool EvaluationQueue::IsInQueue(std::shared_ptr<GroupCell> gr) const
 {
-  for(std::list<GroupCell *>::const_iterator it = m_queue.begin(); it != m_queue.end(); ++it)
+  for(std::list<std::shared_ptr<GroupCell> >::const_iterator it = m_queue.begin(); it != m_queue.end(); ++it)
     if (*it == gr)
       return true;
   
   return false;
 }
 
-void EvaluationQueue::Remove(GroupCell *gr)
+void EvaluationQueue::Remove(std::shared_ptr<GroupCell> gr)
 {
   bool removeFirst = !(m_queue.empty()) && gr == m_queue.front();
   m_queue.remove(gr);
@@ -71,7 +71,7 @@ void EvaluationQueue::Remove(GroupCell *gr)
   }
 }
 
-void EvaluationQueue::AddToQueue(GroupCell *gr)
+void EvaluationQueue::AddToQueue(std::shared_ptr<GroupCell> gr)
 {
   if(gr == NULL)
     return;
@@ -92,17 +92,17 @@ void EvaluationQueue::AddToQueue(GroupCell *gr)
  * Add the tree of hidden cells to the EQ by recursively adding cells'
  * hidden branches to the EQ.
  */
-void EvaluationQueue::AddHiddenTreeToQueue(GroupCell *gr)
+void EvaluationQueue::AddHiddenTreeToQueue(std::shared_ptr<GroupCell> gr)
 {
   if (gr == NULL)
     return; // caller should check, but just in case
 
-  GroupCell *cell = gr->GetHiddenTree();
+  std::shared_ptr<GroupCell> cell(gr->GetHiddenTree());
   while (cell != NULL)
   {
-    AddToQueue(dynamic_cast<GroupCell *>(cell));
+    AddToQueue(cell);
     AddHiddenTreeToQueue(cell);
-    cell = dynamic_cast<GroupCell *>(cell->m_next);
+    cell = std::dynamic_pointer_cast<GroupCell, Cell>(cell->m_next);
   }
 }
 
@@ -128,7 +128,7 @@ void EvaluationQueue::RemoveFirst()
   }
 }
 
-void EvaluationQueue::AddTokens(GroupCell *cell)
+void EvaluationQueue::AddTokens(std::shared_ptr<GroupCell> cell)
 {
   if(cell == NULL)
     return;
@@ -171,7 +171,7 @@ void EvaluationQueue::AddTokens(GroupCell *cell)
     m_commands.push_back(command(token, index));
 }
 
-GroupCell *EvaluationQueue::GetCell()
+std::shared_ptr<GroupCell> EvaluationQueue::GetCell()
 {
   if(m_queue.empty())
     return NULL;

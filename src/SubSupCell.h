@@ -39,19 +39,19 @@ public:
 
   std::list<std::shared_ptr<Cell>> GetInnerCells() override;
   
-  void SetBase(Cell *base);
+  void SetBase(std::shared_ptr<Cell> base);
 
-  void SetIndex(Cell *index);
+  void SetIndex(std::shared_ptr<Cell> index);
 
-  void SetExponent(Cell *expt);
+  void SetExponent(std::shared_ptr<Cell> expt);
 
-  void SetPreSub(Cell *index);
+  void SetPreSub(std::shared_ptr<Cell> index);
 
-  void SetPreSup(Cell *index);
+  void SetPreSup(std::shared_ptr<Cell> index);
 
-  void SetPostSub(Cell *index){SetIndex(index);}
+  void SetPostSub(std::shared_ptr<Cell> index){SetIndex(index);}
 
-  void SetPostSup(Cell *expt){SetExponent(expt);}
+  void SetPostSup(std::shared_ptr<Cell> expt){SetExponent(expt);}
   
   void RecalculateHeight(int fontsize) override;
 
@@ -77,7 +77,7 @@ protected:
   std::shared_ptr<Cell> m_postSubCell;
   std::shared_ptr<Cell> m_preSupCell;
   std::shared_ptr<Cell> m_preSubCell;
-  std::list<Cell *> m_innerCellList;
+  std::list<std::shared_ptr<Cell> > m_innerCellList;
 };
 
 #endif // SUBSUPCELL_H

@@ -74,43 +74,43 @@ std::list<std::shared_ptr<Cell>> SubSupCell::GetInnerCells()
   return innerCells;
 }
 
-void SubSupCell::SetPreSup(Cell *index)
+void SubSupCell::SetPreSup(std::shared_ptr<Cell> index)
 {
   if (index == NULL)
     return;
-  m_preSupCell = std::shared_ptr<Cell>(index);
+  m_preSupCell = index;
   m_innerCellList.push_back(index);
 }
 
-void SubSupCell::SetPreSub(Cell *index)
+void SubSupCell::SetPreSub(std::shared_ptr<Cell> index)
 {
   if (index == NULL)
     return;
-  m_preSubCell = std::shared_ptr<Cell>(index);
+  m_preSubCell = index;
   m_innerCellList.push_back(index);
 }
 
-void SubSupCell::SetIndex(Cell *index)
+void SubSupCell::SetIndex(std::shared_ptr<Cell> index)
 {
   if (index == NULL)
     return;
-  m_postSubCell = std::shared_ptr<Cell>(index);
+  m_postSubCell = index;
   m_innerCellList.push_back(index);
 }
 
-void SubSupCell::SetBase(Cell *base)
+void SubSupCell::SetBase(std::shared_ptr<Cell> base)
 {
   if (base == NULL)
     return;
-  m_baseCell = std::shared_ptr<Cell>(base);
+  m_baseCell = base;
   m_innerCellList.push_back(base);
 }
 
-void SubSupCell::SetExponent(Cell *expt)
+void SubSupCell::SetExponent(std::shared_ptr<Cell> expt)
 {
   if (expt == NULL)
     return;
-  m_postSupCell = std::shared_ptr<Cell>(expt);
+  m_postSupCell = expt;
 }
 
 void SubSupCell::RecalculateWidths(int fontsize)
