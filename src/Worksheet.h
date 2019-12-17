@@ -103,7 +103,7 @@ private:
   */
   wxDC *m_dc;
   //! Where do we need to start the repainting of the worksheet?
-  GroupCell *m_redrawStart;
+  std::shared_ptr<GroupCell> m_redrawStart;
   //! Do we need to redraw the worksheet?
   bool m_redrawRequested;
   //! The clipboard format "mathML"
@@ -219,16 +219,12 @@ private:
       m_start = NULL;
       m_oldText = wxEmptyString;
       m_newCellsEnd = NULL;
-      wxDELETE(m_oldCells);
       m_oldCells = NULL;
       m_partOfAtomicAction = false;
     }
 
     TreeUndoAction()
     {
-      m_start = NULL;
-      m_newCellsEnd = NULL;
-      m_oldCells = NULL;
       m_partOfAtomicAction = false;
     }
 
@@ -239,7 +235,7 @@ private:
 
       NULL = At the begin of the document.
     */
-    GroupCell *m_start;
+    std::shared_ptr<GroupCell> m_start;
 
     /*! The old contents of the cell start
 
@@ -254,7 +250,7 @@ private:
 
       If this field's value is NULL no cells have to be deleted to undo this action.
     */
-    GroupCell *m_newCellsEnd;
+    std::shared_ptr<GroupCell> m_newCellsEnd;
 
     /*! Cells that were deleted in this action.
 
@@ -263,7 +259,7 @@ private:
 
       If this field's value is NULL no cells have to be added to undo this action.
     */
-    GroupCell *m_oldCells;
+    std::shared_ptr<GroupCell> m_oldCells;
   };
 
   //! The list of tree actions that can be undone
@@ -298,7 +294,7 @@ private:
 
     This pointer is needed for keeping track of cell contents changes.
    */
-  GroupCell *TreeUndo_ActiveCell;
+  std::shared_ptr<GroupCell> TreeUndo_ActiveCell;
 
   //! Drop actions from the back of the undo list until itis within the undo limit.
   void TreeUndo_LimitUndoBuffer();
@@ -353,7 +349,7 @@ private:
       - treeUedoActions for the normal undo buffer or
       - treeRedoActions for the buffer that allows reverting undos
   */
-  void TreeUndo_MarkCellsAsAdded(GroupCell *start, GroupCell *end, std::list<TreeUndoAction *> *undoBuffer);
+  void TreeUndo_MarkCellsAsAdded(std::shared_ptr<GroupCell> start, std::shared_ptr<GroupCell> end, std::list<TreeUndoAction *> *undoBuffer);
 
 
   /*! Remember that these cells were just added so this addition can be undone.
@@ -361,13 +357,13 @@ private:
     \param parentOfStart The cell after the first cell that has been added
     \param end        The last cell that has been added
   */
-  void TreeUndo_MarkCellsAsAdded(GroupCell *parentOfStart, GroupCell *end);
+  void TreeUndo_MarkCellsAsAdded(std::shared_ptr<GroupCell> parentOfStart, std::shared_ptr<GroupCell> end);
   //! @}
 
   bool m_scrolledAwayFromEvaluation;
 
   //! The cell the current question from maxima is being kept in.
-  EditorCell *m_answerCell;
+  std::shared_ptr<EditorCell> m_answerCell;
 
   /*! Escape all chars that aren't allowed in html.
 
@@ -398,7 +394,7 @@ private:
   void AddLineToFile(wxTextFile &output, wxString s);
 
   //! Copy the currently selected cells
-  Cell *CopySelection(bool asData = false);
+  std::shared_ptr<Cell> CopySelection(bool asData = false);
 
   /*! Copy the currently given list of cells
 
@@ -414,7 +410,7 @@ private:
                This is accurately copied if asdata=false. But m_next and m_previous are
                treated as mere aliasses of m_nextToDraw in this case.
   */
-  Cell *CopySelection(Cell *start, Cell *end, bool asData = false);
+  std::shared_ptr<Cell> CopySelection(std::shared_ptr<Cell> start, std::shared_ptr<Cell> end, bool asData = false);
 
   //! Get the cordinates of the bottom right point of the worksheet.
   void GetMaxPoint(int *width, int *height);
@@ -455,11 +451,11 @@ private:
 
   void OnMouseLeftDown(wxMouseEvent &event);
 
-  void OnMouseLeftInGcCell(wxMouseEvent &event, GroupCell *clickedInGc);
+  void OnMouseLeftInGcCell(wxMouseEvent &event, std::shared_ptr<GroupCell> clickedInGc);
 
-  void OnMouseLeftInGcLeft(wxMouseEvent &event, GroupCell *clickedInGC);
+  void OnMouseLeftInGcLeft(wxMouseEvent &event, std::shared_ptr<GroupCell> clickedInGC);
 
-  void OnMouseLeftInGc(wxMouseEvent &event, GroupCell *clickedInGC);
+  void OnMouseLeftInGc(wxMouseEvent &event, std::shared_ptr<GroupCell> clickedInGC);
 
   void OnMouseMotion(wxMouseEvent &event);
 
@@ -475,7 +471,7 @@ private:
   void OnCharNoActive(wxKeyEvent &event);
 
   //! Is called when a hCursor is active and we have a WXK_UP/WXK_DOWN event
-  void SelectEditable(EditorCell *editor, bool up);
+  void SelectEditable(std::shared_ptr<EditorCell> editor, bool up);
 
   /*! Handle selecting text using the keyboard
  Is called when the all of the following is true:
@@ -516,10 +512,10 @@ private:
   bool IsLesserGCType(int type, int comparedTo);
 
   //! Finds the start of the current chapter/section/...
-  GroupCell *StartOfSectioningUnit(GroupCell *start);
+  std::shared_ptr<GroupCell> StartOfSectioningUnit(std::shared_ptr<GroupCell> start);
 
   //! Finds the end of the current chapter/section/...
-  GroupCell *EndOfSectioningUnit(GroupCell *start);
+  std::shared_ptr<GroupCell> EndOfSectioningUnit(std::shared_ptr<GroupCell> start);
 
   //! Is called if a action from the autocomplete menu is selected
   void OnComplete(wxCommandEvent &event);
@@ -545,29 +541,29 @@ private:
     See EditorCell::GetActiveCell() for the position if the cursor that is drawn as a
     vertical line.
    */
-  GroupCell *m_hCaretPosition;
+  std::shared_ptr<GroupCell> m_hCaretPosition;
   /*! The start for the selection when selecting group with the horizontally drawn cursor
 
     This cell does define were the selection was actually started and therefore does not need
     to be above m_hCaretPositionEnd in the worksheet. See also m_cellPointers.m_selectionStart.
    */
-  GroupCell *m_hCaretPositionStart;
+  std::shared_ptr<GroupCell> m_hCaretPositionStart;
   /*! The end of the selection when selecting group with the horizontally drawn cursor
 
     This cell does define where the selection was actually ended and therefore does not need
     to be below m_hCaretPositionEnd in the worksheet. See also m_cellPointers.m_selectionEnd.
    */
-  GroupCell *m_hCaretPositionEnd;
+  std::shared_ptr<GroupCell> m_hCaretPositionEnd;
   bool m_leftDown;
   //! Do we want to automatically scroll to a cell as soon as it is being evaluated?
   bool m_followEvaluation;
   bool m_mouseDrag;
   bool m_mouseOutside;
   //! The list of tree that contains the document itself
-  std::unique_ptr<GroupCell> m_tree;
-  GroupCell *m_last;
+  std::shared_ptr<GroupCell> m_tree;
+  std::shared_ptr<GroupCell> m_last;
   int m_clickType;
-  GroupCell *m_clickInGC;
+  std::shared_ptr<GroupCell> m_clickInGC;
   //! true = blink the cursor
   bool m_blinkDisplayCaret;
   //! Is the blinking vertically-drawn cursor currently visible?
@@ -610,7 +606,7 @@ public:
    */
   void OnKeyDown(wxKeyEvent &event);
   //! Change the style of an cell
-  void SetCellStyle(GroupCell *group, GroupType style);
+  void SetCellStyle(std::shared_ptr<GroupCell> group, GroupType style);
 
   //! Renumber all sections
   void NumberSections();
@@ -636,35 +632,35 @@ public:
    */
   Configuration *m_configuration;
   //! Get the currently active EditorCell
-  EditorCell *GetActiveCell()
+  std::shared_ptr<EditorCell> GetActiveCell()
   {
     if (m_cellPointers.m_activeCell != NULL)
-      return dynamic_cast<EditorCell *>(m_cellPointers.m_activeCell);
+      return std::dynamic_pointer_cast<EditorCell ,Cell>(m_cellPointers.m_activeCell);
     else
       return NULL;
   }
 
   //! Tells us which cell the keyboard selection has started in
-  EditorCell *KeyboardSelectionStart()
+  std::shared_ptr<EditorCell> KeyboardSelectionStart()
   {
     if (m_cellPointers.m_cellKeyboardSelectionStartedIn != NULL)
-      return dynamic_cast<EditorCell *>(m_cellPointers.m_cellKeyboardSelectionStartedIn);
+      return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers.m_cellKeyboardSelectionStartedIn);
     else
       return NULL;
   }
 
-  EditorCell *MouseSelectionStart()
+  std::shared_ptr<EditorCell> MouseSelectionStart()
   {
     if (m_cellPointers.m_cellMouseSelectionStartedIn != NULL)
-      return dynamic_cast<EditorCell *>(m_cellPointers.m_cellMouseSelectionStartedIn);
+      return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers.m_cellMouseSelectionStartedIn);
     else
       return NULL;
   }
 
-  EditorCell *SearchStart()
+  std::shared_ptr<EditorCell> SearchStart()
   {
     if (m_cellPointers.m_cellSearchStartedIn != NULL)
-      return dynamic_cast<EditorCell *>(m_cellPointers.m_cellSearchStartedIn);
+      return std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers.m_cellSearchStartedIn);
     else
       return NULL;
   }
@@ -727,7 +723,7 @@ public:
 
     \return true, if we did redraw a workscreet portion.
    */
-  void RequestRedraw(GroupCell *start = NULL);
+  void RequestRedraw(std::shared_ptr<GroupCell> start = NULL);
   /*! Request a part of the worksheet to be redrawn
 
     \param rect The rectangle that is to be requested to be redrawn. If this
@@ -895,7 +891,7 @@ public:
   void DestroyTree();
 
   //! Copies the worksheet's entire contents
-  GroupCell *CopyTree();
+  std::shared_ptr<GroupCell> CopyTree();
 
   /*! Insert group cells into the worksheet
 
@@ -908,8 +904,8 @@ public:
             - treeRedoActions for deletions while executing an undo or
             - NULL for: Don't keep any copy of the cells.
    */
-  GroupCell *InsertGroupCells(GroupCell *cells,
-                              GroupCell *where,
+  std::shared_ptr<GroupCell> InsertGroupCells(std::shared_ptr<GroupCell> cells,
+                              std::shared_ptr<GroupCell> where,
                               std::list<TreeUndoAction *> *undoBuffer
   );
 
@@ -918,20 +914,20 @@ public:
     \param cells The list of cells that has to be inserted
     \param where The cell the cells have to be inserted after
   */
-  GroupCell *InsertGroupCells(GroupCell *cells, GroupCell *where = NULL);
+  std::shared_ptr<GroupCell> InsertGroupCells(std::shared_ptr<GroupCell> cells, std::shared_ptr<GroupCell> where = NULL);
 
   /*! Add a new line to the output cell of the working group.
 
     If maxima isn't currently evaluating and therefore there is no working group
     the line is appended to m_last, instead.
   */
-  void InsertLine(Cell *newCell, bool forceNewLine = false);
+  void InsertLine(std::shared_ptr<Cell> newCell, bool forceNewLine = false);
 
   // Actually recalculate the worksheet.
   bool RecalculateIfNeeded();
 
   //! Schedule a recalculation of the worksheet starting with the cell start.
-  void Recalculate(Cell *start, bool force = false);
+  void Recalculate(std::shared_ptr<Cell> start, bool force = false);
 
   void Recalculate(bool force = false)
     { Recalculate(GetTree(), force); }
@@ -954,7 +950,7 @@ public:
   {
     return (m_cellPointers.m_selectionStart != NULL) ||
            (fromActive && (m_cellPointers.m_activeCell != NULL) &&
-            dynamic_cast<EditorCell *>(m_cellPointers.m_activeCell)->CanCopy());
+            std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers.m_activeCell)->CanCopy());
   }
 
   bool CanPaste()
@@ -965,7 +961,7 @@ public:
   bool CanCut()
   {
     return (m_cellPointers.m_activeCell != NULL &&
-            dynamic_cast<EditorCell *>(m_cellPointers.m_activeCell)->CanCopy()) ||
+            std::dynamic_pointer_cast<EditorCell, Cell>(m_cellPointers.m_activeCell)->CanCopy()) ||
            (m_cellPointers.m_selectionStart != NULL && m_cellPointers.m_selectionStart->GetType() == MC_TYPE_GROUP);
   }
 
@@ -989,8 +985,8 @@ public:
     \addtogroup UndoBufferFill
   */
   void DeleteRegion(
-          GroupCell *start,
-          GroupCell *end,
+          std::shared_ptr<GroupCell> start,
+          std::shared_ptr<GroupCell> end,
           std::list<TreeUndoAction *> *undoBuffer
   );
 
@@ -1001,8 +997,8 @@ public:
     \addtogroup UndoBufferFill
   */
   void DeleteRegion(
-          GroupCell *start,
-          GroupCell *end
+          std::shared_ptr<GroupCell> start,
+          std::shared_ptr<GroupCell> end
   );
 
   /*! Delete the currently selected cells
@@ -1013,7 +1009,7 @@ public:
   void DeleteSelection();
 
   //! Is it possible to delete the cells between start and end?
-  bool CanDeleteRegion(GroupCell *start, GroupCell *end);
+  bool CanDeleteRegion(std::shared_ptr<GroupCell> start, std::shared_ptr<GroupCell> end);
 
   //! Is it possible to delete the currently selected cells?
   bool CanDeleteSelection();
@@ -1099,9 +1095,9 @@ public:
 
   wxSize CopyToFile(wxString file);
 
-  wxSize CopyToFile(wxString file, Cell *start, Cell *end, bool asData = false, int scale = 1);
+  wxSize CopyToFile(wxString file, std::shared_ptr<Cell> start, std::shared_ptr<Cell> end, bool asData = false, int scale = 1);
 
-  void CalculateReorderedCellIndices(Cell *tree, int &cellIndex, std::vector<int> &cellMap);
+  void CalculateReorderedCellIndices(std::shared_ptr<Cell> tree, int &cellIndex, std::vector<int> &cellMap);
 
   //! Export the file to an html document
   bool ExportToHTML(wxString file);
@@ -1111,7 +1107,7 @@ public:
     \todo Slow: Iterates through a string using [] instead of using an iterator.
    */
   void
-  ExportToMAC(wxTextFile &output, GroupCell *tree, bool wxm, const std::vector<int> &cellMap, bool fixReorderedIndices);
+  ExportToMAC(wxTextFile &output, std::shared_ptr<GroupCell> tree, bool wxm, const std::vector<int> &cellMap, bool fixReorderedIndices);
 
   //! Export the file to a text file maxima's load command can read
   bool ExportToMAC(wxString file);
@@ -1139,8 +1135,8 @@ public:
    */
   wxString GetString(bool lb = false);
 
-  GroupCell *GetTree() const
-    { return m_tree.get(); }
+  std::shared_ptr<GroupCell> GetTree() const
+    { return m_tree; }
 
   /*! Return the first of the currently selected cells.
 
@@ -1157,11 +1153,11 @@ public:
   { return m_cellPointers.m_selectionEnd; }
 
   //! Select the cell sel
-  void SetSelection(Cell *sel)
+  void SetSelection(std::shared_ptr<Cell> sel)
   { SetSelection(sel, sel); }
 
   //! Select the cell range start-end
-  void SetSelection(Cell *start, Cell *end);
+  void SetSelection(std::shared_ptr<Cell> start, std::shared_ptr<Cell> end);
 
   /*! We can edit the input if the we have the whole input in selection!
    */
@@ -1179,7 +1175,7 @@ public:
   void ScrollToCellIfNeeded();
   
   //! Schedules scrolling to a given cell
-  void ScheduleScrollToCell(Cell *cell, bool scrollToTop = true)
+  void ScheduleScrollToCell(std::shared_ptr<Cell> cell, bool scrollToTop = true)
     {
       m_cellPointers.ScrollToCell(cell);
       m_scrollToTopOfCell = scrollToTop;
@@ -1193,7 +1189,7 @@ public:
   bool CaretVisibleIs();
 
   //! The first groupCell that is currently visible.
-  GroupCell *FirstVisibleGC();
+  std::shared_ptr<GroupCell> FirstVisibleGC();
 
   /*! Scrolls to a point on the worksheet
 
@@ -1229,10 +1225,10 @@ public:
 
   //! Is the editor active in the last cell of the worksheet?
   bool IsActiveInLast()
-  { return m_cellPointers.m_activeCell != NULL && m_cellPointers.m_activeCell->GetGroup() == m_last; }
+    { return m_cellPointers.m_activeCell != NULL && m_cellPointers.m_activeCell->GetGroup() == m_last.get(); }
 
   //! Returns the last cell of the worksheet
-  GroupCell *GetLastCell()
+  std::shared_ptr<GroupCell> GetLastCell()
   {
     return m_last;
   }
@@ -1240,7 +1236,7 @@ public:
   //! Is the selection in the current working group?
   bool IsSelectionInWorkingGroup();
 
-  void SetActiveCell(EditorCell *cell, bool callRefresh = true);
+  void SetActiveCell(std::shared_ptr<EditorCell> cell, bool callRefresh = true);
 
 /*!
   Set the HCaret to its default location, at the end of the document.
@@ -1251,9 +1247,9 @@ public:
     
     @param where   The cell to place the cursor before.
   */
-  void SetHCaret(GroupCell *where); // call with false, when manually refreshing
+  void SetHCaret(std::shared_ptr<GroupCell> where); // call with false, when manually refreshing
   //! The cell the horizontal cursor is above. NULL means at the start of the document.
-  GroupCell *GetHCaret();
+  std::shared_ptr<GroupCell> GetHCaret();
 
   //! Place the cursor into a new cell where the horizontal cursor is
   void OpenHCaret(wxString txt = wxEmptyString)
@@ -1327,7 +1323,7 @@ public:
 
   void RemoveAllOutput();
 
-  void RemoveAllOutput(GroupCell *cell);
+  void RemoveAllOutput(std::shared_ptr<GroupCell> cell);
   // methods related to evaluation queue
 
   /*! Trigger the evaluation of the current cell(s)
@@ -1338,7 +1334,7 @@ public:
   void Evaluate();
 
   //! Adds a group cell to the evaluation queue marking its contents as "outdated".
-  void AddToEvaluationQueue(GroupCell *cell);
+  void AddToEvaluationQueue(std::shared_ptr<GroupCell> cell);
 
   void AddDocumentToEvaluationQueue();
 
@@ -1352,35 +1348,35 @@ public:
   void AddRestToEvaluationQueue();
 
   //! Adds a chapter, a section or a subsection to the evaluation queue
-  void AddSectionToEvaluationQueue(GroupCell *start);
+  void AddSectionToEvaluationQueue(std::shared_ptr<GroupCell> start);
 
   //! Schedule all cells in the selection to be evaluated
   void AddSelectionToEvaluationQueue();
 
   //! Schedule all cells in a region to be evaluated
-  void AddSelectionToEvaluationQueue(GroupCell *start, GroupCell *end);
+  void AddSelectionToEvaluationQueue(std::shared_ptr<GroupCell> start, std::shared_ptr<GroupCell> end);
 
   //! Schedule this cell for evaluation
-  void AddCellToEvaluationQueue(GroupCell *gc);
+  void AddCellToEvaluationQueue(std::shared_ptr<GroupCell> gc);
 
   //! The list of cells that have to be evaluated
   EvaluationQueue m_evaluationQueue;
 
   // methods for folding
-  GroupCell *UpdateMLast();
+  std::shared_ptr<GroupCell> UpdateMLast();
 
   void FoldOccurred();
 
   //! Fold or unfold a cell
-  GroupCell *ToggleFold(GroupCell *which);
+  std::shared_ptr<GroupCell> ToggleFold(std::shared_ptr<GroupCell> which);
 
-  GroupCell *ToggleFoldAll(GroupCell *which);
+  std::shared_ptr<GroupCell> ToggleFoldAll(std::shared_ptr<GroupCell> which);
 
   void FoldAll();
 
   void UnfoldAll();
 
-  GroupCell *TearOutTree(GroupCell *start, GroupCell *end);
+  std::shared_ptr<GroupCell> TearOutTree(std::shared_ptr<GroupCell> start, std::shared_ptr<GroupCell> end);
 
   // methods for zooming the document in and out
   void SetZoomFactor(double newzoom, bool recalc = true);
@@ -1448,7 +1444,7 @@ public:
   ToolBar *m_mainToolBar;
 
   //! Set this cell as the currently selected one
-  void SelectGroupCell(GroupCell *cell);
+  void SelectGroupCell(std::shared_ptr<GroupCell> cell);
 
   /*! Handling questions from and answers for maxima
   @{
@@ -1469,7 +1465,7 @@ public:
   { return m_questionPrompt; }
   //!@}
   //! Converts a wxm description into individual cells
-  GroupCell *CreateTreeFromWXMCode(wxArrayString wxmLines);
+  std::shared_ptr<GroupCell> CreateTreeFromWXMCode(wxArrayString wxmLines);
 
   /*! Does maxima wait for the answer of a question?
 
@@ -1478,7 +1474,7 @@ public:
   { m_questionPrompt = pending; }
 
 //! Does the GroupCell cell points to contain the question currently asked by maxima?
-  bool GCContainsCurrentQuestion(GroupCell *cell);
+  bool GCContainsCurrentQuestion(std::shared_ptr<GroupCell> cell);
 
   /*! Move the cursor to the question maxima currently asks and if needed add a cell for user input
    */
@@ -1489,13 +1485,13 @@ public:
     \param resortToLast true = if we already have set the cell maxima works on to NULL
     use the last cell maxima was known to work on.
   */
-  GroupCell *GetWorkingGroup(bool resortToLast = false);
+  std::shared_ptr<GroupCell> GetWorkingGroup(bool resortToLast = false);
 
   //! The panel the user can display variable contents in
   Variablespane *m_variablesPane;
 
   //! Returns the index in (%i...) or (%o...)
-  int GetCellIndex(Cell *cell) const;
+  int GetCellIndex(std::shared_ptr<Cell> cell) const;
 
   //Simple iterator over a Maxima input string, skipping comments and strings
   class SimpleMathConfigurationIterator
@@ -1552,7 +1548,7 @@ protected:
 #endif
   void UpdateConfigurationClientSize();
   //! Where to start recalculation. NULL = No recalculation needed.
-  GroupCell *m_recalculateStart;
+  std::shared_ptr<GroupCell> m_recalculateStart;
   //! The x position of the mouse pointer
   int m_pointer_x;
   //! The y position of the mouse pointer

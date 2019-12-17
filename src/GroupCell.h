@@ -123,7 +123,7 @@ public:
    */
   std::shared_ptr<GroupCell> GetLastWorkingGroup() const
   {
-    return dynamic_cast<std::shared_ptr<GroupCell> >(m_cellPointers->m_lastWorkingGroup);
+    return std::dynamic_pointer_cast<GroupCell, Cell>(m_cellPointers->m_lastWorkingGroup);
   }
 
   /*! Marks the cell that is under the mouse pointer.
@@ -148,7 +148,7 @@ public:
 
   void SetCellStyle(int style);
 
-  void SetGroup(std::shared_ptr<Cell> parent) override; // setting parent for all mathcells in GC
+  void SetGroup(Cell *parent) override; // setting parent for all mathcells in GC
 
   // selection methods
   void SelectInner(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last) override;
@@ -220,20 +220,43 @@ public:
   static wxString TexEscapeOutputCell(wxString Input);
 
   std::shared_ptr<Cell> GetPrompt()
-    { return m_inputLabel.get(); }
+    { return m_inputLabel; }
 
   //! Remember that this cell's editor is the cell the search was started in.
   void SearchStartedHere()
     {
-      std::shared_ptr<EditorCell, Cell> editorCell;
+      std::shared_ptr<EditorCell> editorCell;
       if((m_inputLabel) && (m_inputLabel->GetNext()))
       {
         editorCell = std::dynamic_pointer_cast<EditorCell, Cell>(m_inputLabel->GetNext());
         m_cellPointers->m_cellSearchStartedIn = editorCell;
-        m_cellPointers->m_indexSearchStartedAt = editorCell->m_positionOfCaret;
+        m_cellPointers->m_indexSearchStartedAt = editorCell->GetCaretPosition();
       }
     }
+
   
+  //! Remember that this is the cell the mouse selection was started in.
+  void MouseSelectionStartedHere()
+    {
+      std::shared_ptr<EditorCell> editorCell;
+      if((m_inputLabel) && (m_inputLabel->GetNext()))
+      {
+        editorCell = std::dynamic_pointer_cast<EditorCell, Cell>(m_inputLabel->GetNext());
+        m_cellPointers->m_cellMouseSelectionStartedIn = editorCell;
+      }
+    }
+
+  //! Remember that this is the cell the keyboard selection was started in.
+  void KeyboardSelectionStartedHere()
+    {
+      std::shared_ptr<EditorCell> editorCell;
+      if((m_inputLabel) && (m_inputLabel->GetNext()))
+      {
+        editorCell = std::dynamic_pointer_cast<EditorCell, Cell>(m_inputLabel->GetNext());
+        m_cellPointers->m_cellKeyboardSelectionStartedIn = editorCell;
+      }
+    }
+
   std::shared_ptr<EditorCell> GetInput() const
     {
       if (m_inputLabel != NULL)
@@ -247,7 +270,7 @@ public:
     See also GetOutput();
   */
   std::shared_ptr<Cell> GetLabel()
-    { return m_output.get(); }
+    { return m_output; }
 
   /*! Returns the list of cells the output consists of, starting after the label.
 

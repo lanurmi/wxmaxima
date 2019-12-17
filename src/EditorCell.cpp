@@ -390,16 +390,16 @@ EditorCell::~EditorCell()
 
 void EditorCell::MarkAsDeleted()  
 {
-  if (m_cellPointers->m_cellMouseSelectionStartedIn == this)
+  if (m_cellPointers->m_cellMouseSelectionStartedIn.get() == this)
     m_cellPointers->m_cellMouseSelectionStartedIn = NULL;
-  if (m_cellPointers->m_cellKeyboardSelectionStartedIn == this)
+  if (m_cellPointers->m_cellKeyboardSelectionStartedIn.get() == this)
     m_cellPointers->m_cellKeyboardSelectionStartedIn = NULL;
-  if (m_cellPointers->m_cellSearchStartedIn == this)
+  if (m_cellPointers->m_cellSearchStartedIn.get() == this)
   {
     m_cellPointers->m_cellSearchStartedIn = NULL;
     m_cellPointers->m_indexSearchStartedAt = -1;
   }
-  if (m_cellPointers->m_activeCell == this)
+  if (m_cellPointers->m_activeCell.get() == this)
     m_cellPointers->m_activeCell = NULL;
 
   Cell::MarkAsDeleted();

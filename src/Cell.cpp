@@ -88,19 +88,6 @@ Cell::Cell(Cell *group, Configuration **config, CellPointers *cellPointers)
 
 Cell::~Cell()
 {
-  // Find the last cell in this list of cells
-  Cell *last = this;
-  while (last->m_next != NULL)
-    last = last->m_next;
-
-  // Delete all cells beginning with the last one
-  while ((last != NULL) && (last != this))
-  {
-    Cell *tmp = last;
-    last = last->m_previous;
-    wxDELETE(tmp);
-    last->m_next = NULL;
-  }
 }
 
 void Cell::SetType(CellType type)
@@ -169,15 +156,15 @@ void Cell::CopyCommonData(const Cell & cell)
   m_isHidableMultSign = cell.m_isHidableMultSign;
 }
 
-Cell *Cell::CopyList()
+std::shared_ptr<Cell> Cell::CopyList()
 {
-  Cell *dest = Copy();
-  Cell *ret = dest;
-  Cell *src = m_next;
+  std::shared_ptr<Cell> dest = std::shared_ptr<Cell>(Copy());
+  std::shared_ptr<Cell> ret = dest;
+  std::shared_ptr<Cell> src = m_next;
 
   while (src != NULL)
   {
-    dest->AppendCell(src->Copy());
+    dest->AppendCell(std::shared_ptr<Cell>(src->Copy()));
     src = src->m_next;
     dest = dest->m_next;
   }
@@ -191,18 +178,18 @@ void Cell::ClearCacheList()
   while (tmp != NULL)
   {
     tmp->ClearCache();
-    tmp = tmp->m_next;
+    tmp = tmp->m_next.get();
   }
 }
 
-void Cell::SetGroupList(Cell *group)
+void Cell::SetGroupList(Cell* group)
 {
   Cell *tmp = this;
   while (tmp != NULL)
   {
     tmp->SetGroup(group);
     tmp->SetParent(this);
-    tmp = tmp->m_next;
+    tmp = tmp->m_next.get();
   }
 }
 
@@ -223,7 +210,7 @@ int Cell::CellsInListRecursive()
       if(*it != NULL)
         cells += (*it)->CellsInListRecursive();
     }
-    tmp = tmp->m_next;
+    tmp = tmp->m_next.get();
   }
   return cells;
 }
@@ -248,33 +235,41 @@ void Cell::SetGroup(Cell *group)
 /***
  * Append new cell to the end of this list.
  */
-void Cell::AppendCell(Cell *p_next)
+void Cell::AppendCell(std::shared_ptr<Cell> p_next)
 {
   if (p_next == NULL)
     return;
   m_maxDrop = -1;
   m_maxCenter = -1;
-
-  // Search the last cell in the list
-  Cell *LastInList = this;
-  while (LastInList->m_next != NULL)
-    LastInList = LastInList->m_next;
-
-  // Append this p_next to the list
-  LastInList->m_next = p_next;
-  LastInList->m_next->m_previous = LastInList;
-
-  // Search the last cell in the list that is sorted by the drawing order
-  Cell *LastToDraw = LastInList;
-  while (LastToDraw->m_nextToDraw != NULL)
-    LastToDraw = LastToDraw->m_nextToDraw;
-
-  // Append p_next to this list.
-  LastToDraw->m_nextToDraw = p_next;
-  p_next->m_previousToDraw = LastToDraw;
+  
+  if(!m_next)
+  {
+    m_next = p_next;
+  }
+  else
+  {
+    // Search the last cell in the list
+    std::shared_ptr<Cell> last = m_next;
+    while (last->m_next != NULL)
+      last = last->m_next;
+    
+    // Search the last cell in the list that is sorted by the drawing order
+    std::shared_ptr<Cell> lastToDraw = m_next;
+    while (lastToDraw->m_nextToDraw != NULL)
+      lastToDraw = lastToDraw->m_nextToDraw;
+    
+    
+    // Append this p_next to the list
+    last->m_next = p_next;
+    last->m_next->m_previous = last;
+    
+    // Append p_next to this list.
+    lastToDraw->m_nextToDraw = p_next;
+    p_next->m_previousToDraw = lastToDraw;
+  }
 }
 
-Cell *Cell::GetGroup()
+std::shared_ptr<Cell> Cell::GetGroup()
 {
   wxASSERT_MSG(m_group != NULL, _("Bug: Math Cell that claims to have no group Cell it belongs to"));
   return m_group;
@@ -287,7 +282,7 @@ int Cell::GetMaxCenter()
 {
   if ((m_maxCenter < 0) || ((*m_configuration)->RecalculationForce()))
   {
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = this;
     m_maxCenter  = 0;
     while (tmp != NULL)
     {
@@ -319,7 +314,7 @@ int Cell::GetMaxDrop()
 //  if ((m_maxDrop < 0) || ((*m_configuration)->RecalculationForce()))
   {
     m_maxDrop = 0;
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = this;
     while (tmp != NULL)
     {
       if ((tmp != this) && (tmp->m_breakLine))
@@ -345,7 +340,7 @@ int Cell::GetFullWidth()
   // Recalculate the with of this list of cells only if this has been marked as necessary.
   if ((m_fullWidth < 0) || ((*m_configuration)->RecalculationForce()))
   {
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = this;
 
     // We begin this calculation with a negative offset since the full width of only a single
     // cell doesn't contain the space that separates two cells - that is automatically added
@@ -369,7 +364,7 @@ int Cell::GetLineWidth()
     m_lineWidth = 0;
     int width = m_width;
 
-    Cell *tmp = this;
+    std::shared_ptr<Cell> tmp = this;
     while(tmp != NULL)
     {
       width += tmp->m_width;
@@ -430,7 +425,7 @@ void Cell::AddToolTip(const wxString &tip)
 }
 void Cell::DrawList(wxPoint point)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   while (tmp != NULL)
   {
     tmp->Draw(point);
@@ -442,7 +437,7 @@ void Cell::DrawList(wxPoint point)
 
 void Cell::RecalculateList(int fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -454,7 +449,7 @@ void Cell::RecalculateList(int fontsize)
 
 void Cell::ResetSizeList()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -466,7 +461,7 @@ void Cell::ResetSizeList()
 
 void Cell::RecalculateHeightList(int fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -484,7 +479,7 @@ void Cell::RecalculateHeightList(int fontsize)
 */
 void Cell::RecalculateWidthsList(const int &fontsize)
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -611,7 +606,7 @@ wxString Cell::ToString()
 wxString Cell::ListToString()
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   bool firstline = true;
 
   while (tmp != NULL)
@@ -652,7 +647,7 @@ wxString Cell::ToMatlab()
 wxString Cell::ListToMatlab()
 {
 	wxString retval;
-	Cell *tmp = this;
+	std::shared_ptr<Cell> tmp = this;
 	bool firstline = true;
 
 	while (tmp != NULL)
@@ -693,7 +688,7 @@ wxString Cell::ToTeX()
 wxString Cell::ListToTeX()
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -724,7 +719,7 @@ wxString Cell::ListToMathML(bool startofline)
 
   // If the region to export contains linebreaks or labels we put it into a table.
   bool needsTable = false;
-  Cell *temp = this;
+  std::shared_ptr<Cell> temp = this;
   while (temp)
   {
     if (temp->HardLineBreak())
@@ -905,7 +900,7 @@ wxString Cell::ListToOMML(bool WXUNUSED(startofline))
   // If the region to export contains linebreaks or labels we put it into a table.
   // Export all cells
 
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   while (tmp != NULL)
   {
     wxString token = tmp->ToOMML();
@@ -932,7 +927,7 @@ wxString Cell::ListToOMML(bool WXUNUSED(startofline))
 wxString Cell::ListToRTF(bool startofline)
 {
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -1003,7 +998,7 @@ wxString Cell::ListToXML()
   bool highlight = false;
 
   wxString retval;
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
 
   while (tmp != NULL)
   {
@@ -1042,7 +1037,7 @@ wxString Cell::GetDiffPart()
 /***
  * Find the first and last cell in rectangle rect in this line.
  */
-void Cell::SelectRect(const wxRect &rect, Cell **first, Cell **last)
+void Cell::SelectRect(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last)
 {
   SelectFirst(rect, first);
   if (*first != NULL)
@@ -1059,7 +1054,7 @@ void Cell::SelectRect(const wxRect &rect, Cell **first, Cell **last)
 /***
  * Find the first cell in rectangle rect in this line.
  */
-void Cell::SelectFirst(const wxRect &rect, Cell **first)
+void Cell::SelectFirst(const wxRect &rect, std::shared_ptr<Cell> *first)
 {
   if (rect.Intersects(GetRect(false)))
     *first = this;
@@ -1072,7 +1067,7 @@ void Cell::SelectFirst(const wxRect &rect, Cell **first)
 /***
  * Find the last cell in rectangle rect in this line.
  */
-void Cell::SelectLast(const wxRect &rect, Cell **last)
+void Cell::SelectLast(const wxRect &rect, std::shared_ptr<Cell> *last)
 {
   if (rect.Intersects(GetRect(false)))
     *last = this;
@@ -1083,7 +1078,7 @@ void Cell::SelectLast(const wxRect &rect, Cell **last)
 /***
  * Select rectangle in deeper cell - derived classes should override this
  */
-void Cell::SelectInner(const wxRect &rect, Cell **first, Cell **last)
+void Cell::SelectInner(const wxRect &rect, std::shared_ptr<Cell> *first, std::shared_ptr<Cell> *last)
 {
   *first = NULL;
   *last = NULL;
@@ -1139,18 +1134,18 @@ void Cell::ResetData()
       (*it)->ResetData();
 }
 
-Cell *Cell::first()
+std::shared_ptr<Cell> Cell::first()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   while (tmp->m_previous)
     tmp = tmp->m_previous;
 
   return tmp;
 }
 
-Cell *Cell::last()
+std::shared_ptr<Cell> Cell::last()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   while (tmp->m_next)
     tmp = tmp->m_next;
 
@@ -1174,7 +1169,7 @@ void Cell::Unbreak()
 
 void Cell::UnbreakList()
 {
-  Cell *tmp = this;
+  std::shared_ptr<Cell> tmp = this;
   while (tmp != NULL)
   {
     tmp->Unbreak();
@@ -1279,7 +1274,7 @@ wxAccStatus Cell::GetDescription(int childId, wxString *description)
   }
   else
   {
-    Cell *cell = NULL;
+    std::shared_ptr<Cell> cell = NULL;
     if(GetChild(childId,&cell) == wxACC_OK)
     {
       if(cell != NULL)
@@ -1311,7 +1306,7 @@ wxAccStatus Cell::GetValue (int childId, wxString *strValue)
   if(strValue == NULL)
     return wxACC_FAIL;
 
-  Cell *cell;
+  std::shared_ptr<Cell> cell;
   if(GetChild(childId,&cell) == wxACC_OK)
   {
     *strValue = cell->ToString();
@@ -1350,7 +1345,7 @@ wxAccStatus Cell::HitTest(const wxPoint &pt,
     GetChildCount(&childCount);
     for (int i = 0; i < childCount; i++)
     {
-      Cell *child;
+      std::shared_ptr<Cell> child;
       GetChild(i, &child);
       child->GetLocation(rect, 0);
       if (rect.Contains(pt))
@@ -1405,7 +1400,7 @@ wxAccStatus Cell::GetFocus (int *childId, wxAccessible **child)
   for(int i = 0; i < childCount;i++)
   {
     int dummy1;
-    Cell *cell = NULL;
+    std::shared_ptr<Cell> cell = NULL;
     GetChild(i + 1, &cell);
     if (cell != NULL)
       if(cell->GetFocus(&dummy1, child) == wxACC_OK)
@@ -1444,7 +1439,7 @@ wxAccStatus Cell::GetLocation(wxRect &rect, int elementId)
   }
   else
   {
-    Cell *cell = NULL;
+    std::shared_ptr<Cell> cell = NULL;
 	if (GetChild(elementId, &cell) == wxACC_OK)
 		return cell->GetLocation(rect, 0);
   }
@@ -1466,22 +1461,9 @@ wxAccStatus Cell::GetRole (int WXUNUSED(childId), wxAccRole *role)
 Cell::CellPointers::CellPointers(wxScrolledCanvas *mathCtrl)
 {
   m_scrollToCell = false;
-  m_cellToScrollTo = NULL;
   m_wxmxImgCounter = 0;
   m_mathCtrl = mathCtrl;
-  m_cellMouseSelectionStartedIn = NULL;
-  m_cellKeyboardSelectionStartedIn = NULL;
-  m_cellUnderPointer = NULL;
-  m_cellSearchStartedIn = NULL;
-  m_answerCell = NULL;
   m_indexSearchStartedAt = -1;
-  m_activeCell = NULL;
-  m_groupCellUnderPointer = NULL;
-  m_lastWorkingGroup = NULL;
-  m_workingGroup = NULL;
-  m_selectionStart = NULL;
-  m_selectionEnd = NULL;
-  m_currentTextCell = NULL;
 }
 
 wxString Cell::CellPointers::WXMXGetNewFileName()
@@ -1491,9 +1473,9 @@ wxString Cell::CellPointers::WXMXGetNewFileName()
   return file;
 }
 
-bool Cell::CellPointers::ErrorList::Contains(Cell *cell)
+bool Cell::CellPointers::ErrorList::Contains(std::shared_ptr<Cell> cell)
 {
-  for(std::list<Cell *>::const_iterator it = m_errorList.begin(); it != m_errorList.end();++it)
+  for(std::list<std::shared_ptr<Cell>>::const_iterator it = m_errorList.begin(); it != m_errorList.end();++it)
   {
     if((*it)==cell)
       return true;

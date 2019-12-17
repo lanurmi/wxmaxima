@@ -151,14 +151,6 @@ public:
   int IndexSearchStartedAt() const
   { return m_cellPointers->m_indexSearchStartedAt; }
 
-  //! Remember that this is the cell the mouse selection was started in.
-  void MouseSelectionStartedHere()
-  { m_cellPointers->m_cellMouseSelectionStartedIn = this; }
-
-  //! Remember that this is the cell the keyboard selection was started in.
-  void KeyboardSelectionStartedHere()
-  { m_cellPointers->m_cellKeyboardSelectionStartedIn = this; }
-
   //! Remember that this is the cell the keyboard selection was started in.
   void IndexSearchStartedAt(int index)
   { m_cellPointers->m_indexSearchStartedAt = index; }
@@ -391,7 +383,7 @@ public:
   }
 
   bool IsActive() const override
-  { return this == m_cellPointers->m_activeCell; }
+    { return this == m_cellPointers->m_activeCell.get(); }
 
   //! Is the cursor at the start of this cell?
   bool CaretAtStart() const

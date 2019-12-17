@@ -914,17 +914,17 @@ class Cell
     the cell's SetGroup is called.
    */
   
-  virtual void SetParent(std::shared_ptr<Cell> parent)
+  virtual void SetParent(Cell * parent)
     { m_parent = parent; }
 
   /*! Define which Cell is the GroupCell this list of cells belongs to
 
     Also automatically sets this cell as the "parent" of all cells of the list.
    */
-  void SetGroupList(std::shared_ptr<Cell> group);
+  void SetGroupList(Cell *group);
 
   //! Define which Sell is the GroupCell this list of cells belongs to
-  virtual void SetGroup(std::shared_ptr<Cell> group);
+  virtual void SetGroup(Cell * group);
   
   virtual void SetStyle(TextStyle style)
   {
@@ -996,7 +996,7 @@ protected:
   Cell *m_group;
 
   //! The cell that contains the current cell
-  std::shared_ptr<Cell> m_parent;
+  Cell *m_parent;
 
   //! Does this cell begin with a forced page break?
   bool m_breakPage;
