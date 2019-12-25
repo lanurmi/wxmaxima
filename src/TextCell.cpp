@@ -367,16 +367,15 @@ wxSize TextCell::GetTextSize(wxString const &text)
   double fontSize = dc->GetFont().GetPointSize();
 
   SizeHash::const_iterator it = m_widths.find(fontSize);
-  if(it != m_widths.end())
-  {
-    std::cerr<<"Using cached text width!\n";
-    return it->second;
-  }
+//  if(it != m_widths.end())
+//  {
+//    std::cerr<<"Using cached text width!\n";
+//    return it->second;
+//  }
   std::cerr<<"Calculating new width!\n";
-  int width, height;
-  dc->GetTextExtent(text, &width, &height);
-  m_widths[fontSize] = wxSize(width, height);
-  return wxSize(width, height);
+  wxSize sz = dc->GetTextExtent(text);
+  m_widths[fontSize] = sz;
+  return sz;
 }
 
 bool TextCell::NeedsRecalculation()
