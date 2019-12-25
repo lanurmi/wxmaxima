@@ -367,12 +367,12 @@ wxSize TextCell::GetTextSize(wxString const &text)
   double fontSize = dc->GetFont().GetPointSize();
 
   SizeHash::const_iterator it = m_widths.find(fontSize);
-//  if(it != m_widths.end())
-//  {
-//    std::cerr<<"Using cached text width!\n";
-//    return it->second;
-//  }
-  std::cerr<<"Calculating new width!\n";
+
+  // If we already know this text piece's size we return the cached value
+  if(it != m_widths.end())
+    return it->second;
+
+  // Ask wxWidgets to return this text piece's size (slow!)
   wxSize sz = dc->GetTextExtent(text);
   m_widths[fontSize] = sz;
   return sz;
@@ -474,6 +474,7 @@ void TextCell::RecalculateWidths(int fontsize)
         dc->SetFont(font);
         labelSize = GetTextSize(text);
       } while ((labelSize.GetWidth() >= m_width) && (m_fontSizeLabel > 2));
+      m_width = labelSize.GetWidth();
       m_height = labelSize.GetHeight();
       m_center = m_height / 2;
     }
@@ -503,7 +504,7 @@ void TextCell::RecalculateWidths(int fontsize)
       /// This is the default.
     else
     {
-      wxSize sz = GetTextSize(m_altText);
+      wxSize sz = GetTextSize(m_displayedText);
       m_width = sz.GetWidth();
       m_height = sz.GetHeight();
     }
