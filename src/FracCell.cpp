@@ -117,6 +117,9 @@ void FracCell::SetDenom(Cell *denom)
 
 void FracCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   if(!m_isBrokenIntoLines)
   {
     
@@ -175,6 +178,9 @@ void FracCell::RecalculateWidths(int fontsize)
 
 void FracCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   if(!m_isBrokenIntoLines)
   {

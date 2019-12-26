@@ -60,6 +60,8 @@ Cell::Cell(Cell *group, Configuration **config, CellPointers *cellPointers)
    m_configuration(config),
    m_cellPointers(cellPointers)
 {
+  m_fontsize_old = -1;
+  m_isBrokenIntoLines_last = false;
   m_isHidableMultSign = false;
   m_lastZoomFactor = -1;
   m_clientWidth_old = -1;
@@ -323,6 +325,8 @@ int Cell::GetMaxCenter()
 bool Cell::NeedsRecalculation()
 {
   return (m_width < 0) || (m_height < 0) || (m_center < 0) ||
+    (m_fontsize_old != m_fontsize_old) ||
+    (m_isBrokenIntoLines_last != m_isBrokenIntoLines) ||
     (m_currentPoint.x < 0) || (m_currentPoint.y < 0) ||
     (m_clientWidth_old != (*m_configuration)->GetClientWidth()) ||
     (m_lastZoomFactor != (*m_configuration)->GetZoomFactor()) ||
@@ -335,7 +339,7 @@ bool Cell::NeedsRecalculation()
  */
 int Cell::GetMaxDrop()
 {
-//  if ((m_maxDrop < 0) || ((*m_configuration)->RecalculationForce()))
+  if ((m_maxDrop <= 0) || ((*m_configuration)->RecalculationForce()))
   {
     m_maxDrop = 0;
     Cell *tmp = this;
@@ -518,6 +522,8 @@ void Cell::RecalculateWidths(int fontsize)
   m_fontSize = fontsize;
   m_clientWidth_old = (*m_configuration)->GetClientWidth();
   m_lastZoomFactor = (*m_configuration)->GetZoomFactor();
+  m_fontsize_old = fontsize;
+  m_isBrokenIntoLines_last = m_isBrokenIntoLines;
 }
 
 /*! Is this cell currently visible in the window?.

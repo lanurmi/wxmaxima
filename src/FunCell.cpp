@@ -78,6 +78,9 @@ void FunCell::SetArg(Cell *arg)
 
 void FunCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   if(!m_isBrokenIntoLines)
   {
     m_argCell->RecalculateWidthsList(fontsize);
@@ -92,6 +95,9 @@ void FunCell::RecalculateWidths(int fontsize)
 
 void FunCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   if(!m_isBrokenIntoLines)
   {

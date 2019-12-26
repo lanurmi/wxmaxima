@@ -85,6 +85,9 @@ void AbsCell::SetInner(Cell *inner)
 
 void AbsCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   if(m_isBrokenIntoLines)
   {
     m_width = 0;
@@ -102,6 +105,9 @@ void AbsCell::RecalculateWidths(int fontsize)
 
 void AbsCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   if (!m_isBrokenIntoLines)
   {

@@ -104,6 +104,9 @@ void SumCell::SetUnder(Cell *under)
 
 void SumCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Configuration *configuration = (*m_configuration);
 
   m_signSize = Scale_Px(50) * configuration->GetZoomFactor();
@@ -147,6 +150,9 @@ void SumCell::RecalculateWidths(int fontsize)
 
 void SumCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   m_under->RecalculateHeightList(wxMax(MC_MIN_SIZE, fontsize - SUM_DEC));
   m_over->RecalculateHeightList(wxMax(MC_MIN_SIZE, fontsize - SUM_DEC));

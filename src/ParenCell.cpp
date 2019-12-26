@@ -153,6 +153,9 @@ void ParenCell::SetFont(int fontsize)
 
 void ParenCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Configuration *configuration = (*m_configuration);
   
   if(!m_isBrokenIntoLines)
@@ -219,6 +222,9 @@ void ParenCell::RecalculateWidths(int fontsize)
 
 void ParenCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   Configuration *configuration = (*m_configuration);
   m_height = wxMax(m_signHeight,m_innerCell->GetMaxHeight()) + Scale_Px(2);

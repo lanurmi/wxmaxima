@@ -398,13 +398,9 @@ bool TextCell::NeedsRecalculation()
 
 void TextCell::RecalculateWidths(int fontsize)
 {
-  if(fontsize != m_fontsize_old)
-    ResetSize();
-  m_fontsize_old = fontsize;
-  Configuration *configuration = (*m_configuration);
-  
   if(NeedsRecalculation())
   {
+    Configuration *configuration = (*m_configuration);  
     // If the setting has changed and we want to show a user-defined label
     // instead of an automatic one or vice versa we decide that here.
     if(
@@ -527,8 +523,6 @@ void TextCell::RecalculateWidths(int fontsize)
       m_width = m_width / 4;
     }
   }
-  if(m_height < Scale_Px(4)) m_height = Scale_Px(4);
-  m_realCenter = m_center = m_height / 2;
   Cell::RecalculateWidths(fontsize);
 }
 

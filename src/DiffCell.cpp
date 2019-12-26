@@ -81,6 +81,9 @@ void DiffCell::SetBase(Cell *base)
 
 void DiffCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateWidths(fontsize);
   if(!m_isBrokenIntoLines)
   {
@@ -93,6 +96,9 @@ void DiffCell::RecalculateWidths(int fontsize)
 
 void DiffCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   if(!m_isBrokenIntoLines)
   {

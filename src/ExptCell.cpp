@@ -129,6 +129,9 @@ void ExptCell::SetBase(Cell *base)
 
 void ExptCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   m_baseCell->RecalculateWidthsList(fontsize);
   if (m_isBrokenIntoLines)
     m_exptCell->RecalculateWidthsList(fontsize);
@@ -146,6 +149,9 @@ void ExptCell::RecalculateWidths(int fontsize)
 
 void ExptCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   m_baseCell->RecalculateHeightList(fontsize);
   if (m_isBrokenIntoLines)

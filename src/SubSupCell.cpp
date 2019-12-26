@@ -115,6 +115,9 @@ void SubSupCell::SetExponent(Cell *expt)
 
 void SubSupCell::RecalculateWidths(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   m_baseCell->RecalculateWidthsList(fontsize);
   if(m_postSubCell)    
     m_postSubCell->RecalculateWidthsList(wxMax(MC_MIN_SIZE, fontsize - SUBSUP_DEC));
@@ -144,6 +147,9 @@ void SubSupCell::RecalculateWidths(int fontsize)
 
 void SubSupCell::RecalculateHeight(int fontsize)
 {
+  if(!NeedsRecalculation())
+    return;
+
   Cell::RecalculateHeight(fontsize);
   m_baseCell->RecalculateHeightList(fontsize);
   if(m_postSubCell)

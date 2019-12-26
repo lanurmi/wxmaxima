@@ -974,6 +974,10 @@ class Cell
   wxPoint GetCurrentPoint() const {return m_currentPoint;}
   
 protected:
+  //! The font size this cell's dimension were calculated with last
+  double m_fontsize_old;
+  //! The "is broken into lines" status we recalculated this cell with last  
+  bool m_isBrokenIntoLines_last;
   //! To be called if the font has changed.
   virtual void FontsChanged()
     {
@@ -995,6 +999,7 @@ protected:
   */
   wxPoint m_currentPoint;
 
+  //! A cache for where m_currentPoint pointed to when it was valid
   wxPoint m_currentPoint_Last;
 
   /*! The GroupCell this list of cells belongs to.
