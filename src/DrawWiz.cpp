@@ -81,9 +81,9 @@ ExplicitWiz::ExplicitWiz(wxWindow *parent, Configuration *config, wxString expre
   }
 
   vbox->Add(
-    new wxImagePanel(
+    new SvgPanel(
       this,
-      Draw_Explicit_png,Draw_Explicit_png_len),
+      Draw_Explicit_svg_gz,Draw_Explicit_svg_gz_len),
     wxSizerFlags().Shaped().Border(wxALL,5).Center()
     );
   
@@ -184,9 +184,9 @@ ImplicitWiz::ImplicitWiz(wxWindow *parent, Configuration *config, wxString expre
     SetName("DrawImplicitWiz2D");
 
   vbox->Add(
-    new wxImagePanel(
+    new SvgPanel(
       this,
-      Draw_Implicit_png,Draw_Implicit_png_len),
+      Draw_Implicit_svg_gz,Draw_Implicit_svg_gz_len),
     wxSizerFlags().Shaped().Border(wxALL,5).Center()
     );
 
@@ -583,23 +583,23 @@ void WizContour::OnRadioButton(wxCommandEvent& WXUNUSED(dummy))
 {
   if(m_contourNone->GetValue())
   {
-    m_image->Load(Draw_ContourNone_png, Draw_ContourNone_png_len);
+    m_image->Load(Draw_ContourNone_svg_gz, Draw_ContourNone_svg_gz_len);
   }
   if(m_contourBase->GetValue())
   {
-    m_image->Load(Draw_ContourBase_png, Draw_ContourBase_png_len);
+    m_image->Load(Draw_ContourBase_svg_gz, Draw_ContourBase_svg_gz_len);
   }
   if(m_contourBoth->GetValue())
   {
-    m_image->Load(Draw_ContourBoth_png, Draw_ContourBoth_png_len);
+    m_image->Load(Draw_ContourBoth_svg_gz, Draw_ContourBoth_svg_gz_len);
   }
   if(m_contourSurface->GetValue())
   {
-    m_image->Load(Draw_ContourSurface_png, Draw_ContourSurface_png_len);
+    m_image->Load(Draw_ContourSurface_svg_gz, Draw_ContourSurface_svg_gz_len);
   }
   if(m_contourOnly->GetValue())
   {
-    m_image->Load(Draw_ContourMap_png, Draw_ContourMap_png_len);
+    m_image->Load(Draw_ContourMap_svg_gz, Draw_ContourMap_svg_gz_len);
   }
 }
 
@@ -648,9 +648,9 @@ WizContour::WizContour(wxWindow *parent, Configuration *WXUNUSED(config)) :
   m_contourBoth->SetValue(true);
   
   vbox->Add(
-    m_image = new wxImagePanel(
+    m_image = new SvgPanel(
       this,
-      Draw_ContourBoth_png,Draw_ContourBoth_png_len),
+      Draw_ContourBoth_svg_gz,Draw_ContourBoth_svg_gz_len),
     wxSizerFlags().Shaped().Border(wxALL,5).Center()
     );
   wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -748,9 +748,9 @@ ParametricWiz::ParametricWiz(wxWindow *parent, Configuration *config, int dimens
   vbox->Add(m_parameterEnd = new BTextCtrl(this,-1, config, "2"), wxSizerFlags().Expand());
 
   vbox->Add(
-    new wxImagePanel(
+    new SvgPanel(
       this,
-      Draw_Parametric_png,Draw_Parametric_png_len),
+      Draw_Parametric_svg_gz,Draw_Parametric_svg_gz_len),
     wxSizerFlags().Shaped().Border(wxALL,5).Center()
     );
   
