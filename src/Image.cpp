@@ -38,7 +38,6 @@
 
 wxMemoryBuffer Image::ReadCompressedImage(wxInputStream *data)
 {
-  WaitForLoad();
   wxMemoryBuffer retval;
   
   char *buf = new char[8192];
@@ -224,6 +223,7 @@ void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::
   omp_set_lock(&m_gnuplotLock);
   #endif
   #if HAVE_OPENMP_TASKS
+  wxLogMessage(_("Starting background thread that loads the gnuplot sources of an image"));
   #pragma omp task
   #endif
   LoadGnuplotSource_Backgroundtask(gnuplotFilename, dataFilename, filesystem);
@@ -758,6 +758,7 @@ void Image::LoadImage(wxString image, std::shared_ptr<wxFileSystem> &filesystem,
   // load process to the background and therefore load images from the main thread.
   #if HAVE_OMP_HEADER 
   omp_set_lock(&m_imageLoadLock);
+  wxLogMessage(_("Starting background thread that loads an image"));
   #if HAVE_OPENMP_TASKS
   #pragma omp task
   #endif
@@ -904,7 +905,6 @@ void Image::LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSyste
       else
         m_isOk = false;
     }
-    Recalculate();
   }
   #if HAVE_OMP_HEADER 
   omp_unset_lock(&m_imageLoadLock);
