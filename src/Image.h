@@ -134,14 +134,15 @@ public:
     { if ((m_scaledBitmap.GetWidth() > 1) || (m_scaledBitmap.GetHeight() > 1))m_scaledBitmap.Create(1, 1); }
   
   //! Reads the compressed image into a memory buffer
-  static wxMemoryBuffer ReadCompressedImage(wxInputStream *data);
+  wxMemoryBuffer ReadCompressedImage(wxInputStream *data);
   
   //! Returns the file name extension of the current image
-  wxString GetExtension() const
-  { return m_extension; };
+  wxString GetExtension();
 
   //! Loads an image from a file
   void LoadImage(wxString image, std::shared_ptr<wxFileSystem> &filesystem, bool remove = true);
+  
+  void LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSystem> &filesystem, bool remove = true);
 
   //! The maximum width this image shall be displayed with
   double GetMaxWidth() const {return m_maxWidth;}
@@ -162,10 +163,10 @@ public:
   wxBitmap GetBitmap(double scale = 1.0);
 
   //! Does the image show an actual image or an "broken image" symbol?
-  bool IsOk() const {return m_isOk;}
+  bool IsOk();
   
   //! Returns the image in its unscaled form
-  wxBitmap GetUnscaledBitmap() const;
+  wxBitmap GetUnscaledBitmap();
 
   //! Can be called to specify a specific scale
   void Recalculate(double scale = 1.0);
@@ -176,22 +177,28 @@ public:
   long m_height;
 
   //! Returns the original image in its compressed form
-  wxMemoryBuffer GetCompressedImage() const
-  { return m_compressedImage; }
+  wxMemoryBuffer GetCompressedImage();
 
   //! Returns the original width
-  size_t GetOriginalWidth() const
-  { return m_originalWidth; }
+  size_t GetOriginalWidth();
 
   //! Returns the original height
-  size_t GetOriginalHeight() const
-  { return m_originalHeight; }
+  size_t GetOriginalHeight();
 
+  //! Wait until the image is loaded
+  void WaitForLoad()
+    {
+      #if HAVE_OMP_HEADER 
+      omp_set_lock(&m_imageLoadLock);
+      omp_unset_lock(&m_imageLoadLock);
+      #endif
+    }
+  
   //! The image in its original compressed form
   wxMemoryBuffer m_compressedImage;
 
   //! Can this image be exported in SVG format?
-  bool CanExportSVG() const {return m_svgRast != NULL;}
+  bool CanExportSVG();
 protected:
   //! A zipped version of the gnuplot commands that produced this image.
   wxMemoryBuffer m_gnuplotSource_Compressed;
@@ -227,8 +234,8 @@ private:
 
   #if HAVE_OMP_HEADER 
   omp_lock_t m_gnuplotLock;
+  omp_lock_t m_imageLoadLock;
   #endif
-  
 };
 
 #endif // IMAGE_H
