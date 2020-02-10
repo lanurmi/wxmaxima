@@ -144,7 +144,7 @@ Image::Image(Configuration **config, const wxBitmap &bitmap)
 }
 
 // constructor which loads an image
-Image::Image(Configuration **config, wxString image, std::shared_ptr<wxFileSystem> &filesystem, bool remove)
+Image::Image(Configuration **config, wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
 {
   #if HAVE_OMP_HEADER 
   omp_init_lock(&m_gnuplotLock);
@@ -217,7 +217,7 @@ bool Image::IsOk()
   return m_isOk;
 }
 
-void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> &filesystem)
+void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem)
 {
   #if HAVE_OMP_HEADER 
   omp_set_lock(&m_gnuplotLock);
@@ -229,7 +229,7 @@ void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::
   LoadGnuplotSource_Backgroundtask(gnuplotFilename, dataFilename, filesystem);
 }
 
-void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> &filesystem)
+void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem)
 {
   {
     m_gnuplotSource = gnuplotFilename;
@@ -752,7 +752,7 @@ void Image::LoadImage(const wxBitmap &bitmap)
   m_height = 1;
 }
 
-void Image::LoadImage(wxString image, std::shared_ptr<wxFileSystem> &filesystem, bool remove)
+void Image::LoadImage(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
 {
   // If we don't have fine-grained locking using omp.h we don't profit from sending the
   // load process to the background and therefore load images from the main thread.
@@ -773,7 +773,7 @@ wxString Image::GetExtension()
 }
 
 
-void Image::LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSystem> &filesystem, bool remove)
+void Image::LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
 {
   m_imageName = image;
   m_compressedImage.Clear();
