@@ -39,7 +39,7 @@
 #include "nanoSVG/nanosvg.h"
 #include "nanoSVG/nanosvgrast.h"
 
-#if HAVE_OMP_HEADER
+#ifdef HAVE_OMP_HEADER
 #include <omp.h>
 #endif
 
@@ -141,7 +141,6 @@ public:
 
   //! Loads an image from a file
   void LoadImage(wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove = true);
-  
 
   //! The maximum width this image shall be displayed with
   double GetMaxWidth() const {return m_maxWidth;}
@@ -233,7 +232,6 @@ private:
   struct NSVGrasterizer* m_svgRast;
 
   std::shared_ptr<wxFileSystem> m_fs_keepalive_gnuplotdata;
-  std::shared_ptr<wxFileSystem> m_fs_keepalive_gnuplotsource;
   std::shared_ptr<wxFileSystem> m_fs_keepalive_imagedata;
   #ifdef HAVE_OMP_HEADER
   omp_lock_t m_gnuplotLock;

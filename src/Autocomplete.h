@@ -65,8 +65,8 @@ public:
 
   explicit AutoComplete(Configuration *configuration);
 
-  Configuration *m_configuration;
-
+  ~AutoComplete();
+  
   //! Load all autocomplete symbols wxMaxima knows about by itself
   void LoadSymbols();
 
@@ -96,17 +96,20 @@ public:
   //! Clear the list of words that appear in the workSheet's code cells
   void ClearWorksheetWords();
   //! Clear the list of files load() can be applied on
-  void ClearLoadfileList(){m_wordList[loadfile] = m_builtInLoadFiles;}
+  void ClearLoadfileList();
   //! Clear the list of files demo() can be applied on
-  void ClearDemofileList(){m_wordList[demofile] = m_builtInDemoFiles;}
+  void ClearDemofileList();
   
   //! Returns a list of possible autocompletions for the string "partial"
   wxArrayString CompleteSymbol(wxString partial, autoCompletionType type = command);
-  wxString FixTemplate(wxString templ);
+  static wxString FixTemplate(wxString templ);
 
 private:
-
+  //! An AddSymbol that doesn't wait for background tasks to finish
+  void AddSymbol_nowait(wxString fun, autoCompletionType type = command);
+  Configuration *m_configuration;
   void LoadSymbols_BackgroundTask();
+  void BuiltinSymbols_BackgroundTask();
 
   //! Replace the list of files in the directory the worksheet file is in to the load files list
   void UpdateLoadFiles_BackgroundTask(wxString partial, wxString maximaDir);
@@ -250,7 +253,7 @@ private:
   };
 
   wxArrayString m_wordList[7];
-  wxRegEx m_args;
+  static wxRegEx m_args;
   WorksheetWords m_worksheetWords;
 };
 

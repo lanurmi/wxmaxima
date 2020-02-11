@@ -1082,6 +1082,9 @@ wxMaxima::wxMaxima(wxWindow *parent, int id, wxLocale *locale, const wxString ti
 
 wxMaxima::~wxMaxima()
 {
+  #ifdef HAVE_OPENMP_TASKS
+  #pragma omp taskwait
+  #endif
   KillMaxima(false);
   MyApp::m_topLevelWindows.remove(this);
   if(MyApp::m_topLevelWindows.empty())
@@ -3363,10 +3366,18 @@ bool wxMaxima::OpenWXMXFile(wxString file, Worksheet *document, bool clearDocume
   wxString filename = wxmxURI + wxT("#zip:content.xml");
 
   // Open the file
-  std::unique_ptr<wxFSFile> fsfile(std::unique_ptr<wxFSFile>(fs.OpenFile(filename)));
+  std::unique_ptr<wxFSFile> fsfile;
+  #ifdef HAVE_OPENMP_TASKS
+  #pragma omp critical (OpenFSFile)
+  #endif
+  fsfile = std::unique_ptr<wxFSFile>(fs.OpenFile(filename));
   if (!fsfile)
   {
     filename = wxmxURI + wxT("#zip:/content.xml");
+    std::unique_ptr<wxFSFile> fsfile;
+    #ifdef HAVE_OPENMP_TASKS
+    #pragma omp critical (OpenFSFile)
+    #endif
     fsfile = std::unique_ptr<wxFSFile>(fs.OpenFile(filename));
   }
 
@@ -3380,6 +3391,10 @@ bool wxMaxima::OpenWXMXFile(wxString file, Worksheet *document, bool clearDocume
       // a letter of ascii code 27 in content.xml. Let's filter this char out.
 
       // Re-open the file.
+      std::unique_ptr<wxFSFile> fsfile;
+      #ifdef HAVE_OPENMP_TASKS
+      #pragma omp critical (OpenFSFile)
+      #endif
       fsfile = std::unique_ptr<wxFSFile>(fs.OpenFile(filename));
       if (fsfile)
       {
@@ -8289,6 +8304,10 @@ bool wxMaxima::SaveOnClose()
 
 void wxMaxima::OnClose(wxCloseEvent &event)
 {
+  #ifdef HAVE_OPENMP_TASKS
+  #pragma omp taskwait
+  #endif
+  
   if(event.GetEventType() == wxEVT_END_SESSION)
     KillMaxima();
 
