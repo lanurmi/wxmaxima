@@ -169,12 +169,8 @@ Image::~Image()
 {
   m_isOk = false;
   WaitForLoad();
-  #ifdef HAVE_OMP_HEADER
-  omp_set_lock(&m_gnuplotLock);
-  #else
   #ifdef HAVE_OPENMP_TASKS
   #pragma omp taskwait
-  #endif
   #endif
   {
     if(m_gnuplotSource != wxEmptyString)
@@ -191,9 +187,6 @@ Image::~Image()
     }
   }
   wxDELETE(m_svgImage);
-  #ifdef HAVE_OMP_HEADER
-  omp_unset_lock(&m_gnuplotLock);
-  #endif
 }
 
 wxMemoryBuffer Image::GetCompressedImage()
