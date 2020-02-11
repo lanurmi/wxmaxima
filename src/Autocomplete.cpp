@@ -30,7 +30,7 @@
 #include <wx/sstream.h>
 #include "Autocomplete.h"
 #include "Dirstructure.h"
-
+#include "Version.h"
 #include <wx/textfile.h>
 #include <wx/filename.h>
 #include <wx/xml/xml.h>
@@ -110,8 +110,18 @@ void AutoComplete::AddWorksheetWords(wxArrayString wordlist)
     m_worksheetWords[*it] = 1;
 }
 
-bool AutoComplete::LoadSymbols()
-{  
+void AutoComplete::LoadSymbols()
+{
+  #ifdef HAVE_OPENMP_TASKS
+  wxLogMessage(_("Starting a background task that setups the autocomplete list."));
+  #pragma omp critical (AutocompleteFiles)
+  #pragma omp task
+  #endif
+  LoadSymbols_BackgroundTask();
+}
+
+void AutoComplete::LoadSymbols_BackgroundTask()
+{
   for (int i = command; i <= unit; i++)
   {
     if (m_wordList[i].GetCount() != 0)
@@ -201,7 +211,6 @@ bool AutoComplete::LoadSymbols()
   m_wordList[unit].Sort();
   m_builtInLoadFiles.Sort();
   m_builtInDemoFiles.Sort();
-  return false;
 }
 
 void AutoComplete::UpdateDemoFiles(wxString partial, wxString maximaDir)
@@ -279,6 +288,16 @@ void AutoComplete::UpdateGeneralFiles(wxString partial, wxString maximaDir)
 
 void AutoComplete::UpdateLoadFiles(wxString partial, wxString maximaDir)
 {
+  #ifdef HAVE_OPENMP_TASKS
+  wxLogMessage(_("Starting a background task that scans for autocompletible file names."));
+  #pragma omp critical (AutocompleteFiles)
+  #pragma omp task
+  #endif
+  UpdateLoadFiles_BackgroundTask(partial, maximaDir);
+}
+
+void AutoComplete::UpdateLoadFiles_BackgroundTask(wxString partial, wxString maximaDir)
+{
   // Remove the opening quote from the partial.
   if(partial[0] == wxT('\"'))
     partial = partial.Right(partial.Length()-1);
@@ -320,7 +339,10 @@ wxArrayString AutoComplete::CompleteSymbol(wxString partial, autoCompletionType 
 {
   wxArrayString completions;
   wxArrayString perfectCompletions;
-  
+
+  #ifdef HAVE_OPENMP_TASKS
+  #pragma omp critical (AutocompleteFiles)
+  #endif
   if(
     ((type == AutoComplete::demofile) || (type == AutoComplete::loadfile)) &&
     (partial.EndsWith("\""))

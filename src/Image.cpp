@@ -79,7 +79,7 @@ wxBitmap Image::GetUnscaledBitmap()
 
 Image::Image(Configuration **config)
 {
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_init_lock(&m_gnuplotLock);
   omp_init_lock(&m_imageLoadLock);
   #endif
@@ -98,7 +98,7 @@ Image::Image(Configuration **config)
 
 Image::Image(Configuration **config, wxMemoryBuffer image, wxString type)
 {
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_init_lock(&m_gnuplotLock);
   omp_init_lock(&m_imageLoadLock);
   #endif
@@ -113,8 +113,7 @@ Image::Image(Configuration **config, wxMemoryBuffer image, wxString type)
   m_originalHeight = 480;
   m_svgImage = NULL;
   m_svgRast = NULL;
-  m_maxWidth = -1;
-  m_maxHeight = -1;
+  
   wxImage Image;
   if (m_compressedImage.GetDataLen() > 0)
   {
@@ -124,11 +123,13 @@ Image::Image(Configuration **config, wxMemoryBuffer image, wxString type)
     m_originalWidth = Image.GetWidth();
     m_originalHeight = Image.GetHeight();
   }
+  m_maxWidth = -1;
+  m_maxHeight = -1;
 }
 
 Image::Image(Configuration **config, const wxBitmap &bitmap)
 {
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_init_lock(&m_gnuplotLock);
   omp_init_lock(&m_imageLoadLock);
   #endif
@@ -144,9 +145,10 @@ Image::Image(Configuration **config, const wxBitmap &bitmap)
 }
 
 // constructor which loads an image
-Image::Image(Configuration **config, wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
+Image::Image(Configuration **config, wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove):
+  m_fs_keepalive_imagedata(filesystem)
 {
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_init_lock(&m_gnuplotLock);
   omp_init_lock(&m_imageLoadLock);
   #endif
@@ -166,10 +168,10 @@ Image::~Image()
 {
   m_isOk = false;
   WaitForLoad();
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_set_lock(&m_gnuplotLock);
   #else
-  #if HAVE_OPENMP_TASKS
+  #ifdef HAVE_OPENMP_TASKS
   #pragma omp taskwait
   #endif
   #endif
@@ -188,7 +190,7 @@ Image::~Image()
     }
   }
   wxDELETE(m_svgImage);
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
 }
@@ -217,19 +219,22 @@ bool Image::IsOk()
   return m_isOk;
 }
 
-void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem)
+
+void Image::GnuplotSource(wxString gnuplotFilename, wxString dataFilename, const std::shared_ptr<wxFileSystem> &filesystem)
 {
-  #if HAVE_OMP_HEADER 
+  m_fs_keepalive_gnuplotsource = filesystem;
+  std::shared_ptr<wxFileSystem> keepFilesystemAlive(filesystem);
+  #ifdef HAVE_OMP_HEADER
   omp_set_lock(&m_gnuplotLock);
   #endif
-  #if HAVE_OPENMP_TASKS
-  wxLogMessage(_("Starting background thread that loads the gnuplot sources of an image"));
+  #ifdef HAVE_OPENMP_TASKS
   #pragma omp task
   #endif
   LoadGnuplotSource_Backgroundtask(gnuplotFilename, dataFilename, filesystem);
 }
 
-void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem)
+void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, const std::shared_ptr<wxFileSystem> &filesystem)
+
 {
   {
     m_gnuplotSource = gnuplotFilename;
@@ -401,7 +406,8 @@ void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString 
       }
     }
   }
-  #if HAVE_OMP_HEADER 
+  m_fs_keepalive_gnuplotsource.reset();
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
 }
@@ -409,10 +415,10 @@ void Image::LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString 
 wxMemoryBuffer Image::GetGnuplotSource()
 {
   wxMemoryBuffer retval;
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_set_lock(&m_gnuplotLock);
   #else
-  #if HAVE_OPENMP_TASKS
+  #ifdef HAVE_OPENMP_TASKS
   #pragma omp taskwait
   #endif
   #endif
@@ -441,7 +447,7 @@ wxMemoryBuffer Image::GetGnuplotSource()
                         output.GetOutputStreamBuffer()->GetBufferSize());
     }
   }
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
 
@@ -451,10 +457,10 @@ wxMemoryBuffer Image::GetGnuplotSource()
 wxMemoryBuffer Image::GetGnuplotData()
 {
   wxMemoryBuffer retval;
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_set_lock(&m_gnuplotLock);
   #else
-  #if HAVE_OPENMP_TASKS
+  #ifdef HAVE_OPENMP_TASKS
   #pragma omp taskwait
   #endif
   #endif
@@ -483,7 +489,7 @@ wxMemoryBuffer Image::GetGnuplotData()
                         output.GetOutputStreamBuffer()->GetBufferSize());
     }
   }
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
   return retval;
@@ -493,10 +499,10 @@ wxString Image::GnuplotData()
 {
   if((!m_gnuplotData.IsEmpty()) && (!wxFileExists(m_gnuplotData)))
   {
-    #if HAVE_OMP_HEADER 
+    #ifdef HAVE_OMP_HEADER
     omp_set_lock(&m_gnuplotLock);
     #else
-    #if HAVE_OPENMP_TASKS
+    #ifdef HAVE_OPENMP_TASKS
     #pragma omp taskwait
     #endif
     #endif
@@ -528,7 +534,7 @@ wxString Image::GnuplotData()
       }
     }
   }
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
   return m_gnuplotData;
@@ -538,10 +544,10 @@ wxString Image::GnuplotSource()
 {
   if((!m_gnuplotSource.IsEmpty()) && (!wxFileExists(m_gnuplotSource)))
   {
-    #if HAVE_OMP_HEADER 
+    #ifdef HAVE_OMP_HEADER
     omp_set_lock(&m_gnuplotLock);
     #else
-    #if HAVE_OPENMP_TASKS
+    #ifdef HAVE_OPENMP_TASKS
     #pragma omp taskwait
     #endif
     #endif
@@ -575,7 +581,7 @@ wxString Image::GnuplotSource()
       }
     }
   }
-  #if HAVE_OMP_HEADER 
+  #ifdef HAVE_OMP_HEADER
   omp_unset_lock(&m_gnuplotLock);
   #endif
   // Restore the data file, as well.
@@ -585,7 +591,6 @@ wxString Image::GnuplotSource()
  
 wxSize Image::ToImageFile(wxString filename)
 {
-  WaitForLoad();
   wxFileName fn(filename);
   wxString ext = fn.GetExt();
   if (filename.Lower().EndsWith(GetExtension().Lower()))
@@ -657,7 +662,6 @@ wxSize Image::ToImageFile(wxString filename)
 
 wxBitmap Image::GetBitmap(double scale) 
 {
-  WaitForLoad();
   Recalculate(scale);
 
   // Let's see if we have cached the scaled bitmap with the right size
@@ -727,12 +731,6 @@ wxBitmap Image::GetBitmap(double scale)
   return m_scaledBitmap;
 }
 
-bool Image::CanExportSVG()
-{
-  WaitForLoad();
-  return m_svgRast != NULL;
-}
-
 void Image::LoadImage(const wxBitmap &bitmap)
 {
   // Convert the bitmap to a png image we can use as m_compressedImage
@@ -752,8 +750,9 @@ void Image::LoadImage(const wxBitmap &bitmap)
   m_height = 1;
 }
 
-void Image::LoadImage(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
+void Image::LoadImage(wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove)
 {
+  m_fs_keepalive_imagedata = filesystem;
   // If we don't have fine-grained locking using omp.h we don't profit from sending the
   // load process to the background and therefore load images from the main thread.
   #if HAVE_OMP_HEADER 
@@ -773,7 +772,7 @@ wxString Image::GetExtension()
 }
 
 
-void Image::LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove)
+void Image::LoadImage_Backgroundtask(wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove)
 {
   m_imageName = image;
   m_compressedImage.Clear();
@@ -905,15 +904,13 @@ void Image::LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSyste
       else
         m_isOk = false;
     }
+    Recalculate();
   }
-  #if HAVE_OMP_HEADER 
-  omp_unset_lock(&m_imageLoadLock);
-  #endif
+  m_fs_keepalive_imagedata.reset();
 }
 
 void Image::Recalculate(double scale)
 {
-  WaitForLoad();
   int width = m_originalWidth;
   int height = m_originalHeight;
   Configuration *configuration = (*m_configuration);

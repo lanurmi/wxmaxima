@@ -89,7 +89,7 @@ public:
     \param filesystem The filesystem to load it from
     \param remove true = Delete the file after loading it
    */
-  Image(Configuration **config, wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove = true);
+  Image(Configuration **config, wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove = true);
 
   ~Image();
 
@@ -99,7 +99,7 @@ public:
     are text-only they profit from being compressed and are stored in the 
     memory in their compressed form.
    */
-  void GnuplotSource(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem);
+  void GnuplotSource(wxString gnuplotFilename, wxString dataFilename, const std::shared_ptr<wxFileSystem> &filesystem);
   /*! Returns the gnuplot source file name of this image
 
     If maxima has deleted the temporary file in the meantime or if it comes from 
@@ -134,15 +134,14 @@ public:
     { if ((m_scaledBitmap.GetWidth() > 1) || (m_scaledBitmap.GetHeight() > 1))m_scaledBitmap.Create(1, 1); }
   
   //! Reads the compressed image into a memory buffer
-  wxMemoryBuffer ReadCompressedImage(wxInputStream *data);
+  static wxMemoryBuffer ReadCompressedImage(wxInputStream *data);
   
   //! Returns the file name extension of the current image
   wxString GetExtension();
 
   //! Loads an image from a file
-  void LoadImage(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove = true);
+  void LoadImage(wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove = true);
   
-  void LoadImage_Backgroundtask(wxString image, std::shared_ptr<wxFileSystem> filesystem, bool remove = true);
 
   //! The maximum width this image shall be displayed with
   double GetMaxWidth() const {return m_maxWidth;}
@@ -198,7 +197,7 @@ public:
   wxMemoryBuffer m_compressedImage;
 
   //! Can this image be exported in SVG format?
-  bool CanExportSVG();
+  bool CanExportSVG() const {return m_svgRast != NULL;}
 protected:
   //! A zipped version of the gnuplot commands that produced this image.
   wxMemoryBuffer m_gnuplotSource_Compressed;
@@ -218,7 +217,8 @@ protected:
   wxString m_gnuplotSource;
   //! The gnuplot data file for this image, if any.
   wxString m_gnuplotData;
-  void LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, std::shared_ptr<wxFileSystem> filesystem);
+  void LoadImage_Backgroundtask(wxString image, const std::shared_ptr<wxFileSystem> &filesystem, bool remove);
+  void LoadGnuplotSource_Backgroundtask(wxString gnuplotFilename, wxString dataFilename, const std::shared_ptr<wxFileSystem> &filesystem);
 
 private:
   Configuration **m_configuration;
@@ -232,10 +232,14 @@ private:
   NSVGimage* m_svgImage;
   struct NSVGrasterizer* m_svgRast;
 
-  #if HAVE_OMP_HEADER 
+  std::shared_ptr<wxFileSystem> m_fs_keepalive_gnuplotdata;
+  std::shared_ptr<wxFileSystem> m_fs_keepalive_gnuplotsource;
+  std::shared_ptr<wxFileSystem> m_fs_keepalive_imagedata;
+  #ifdef HAVE_OMP_HEADER
   omp_lock_t m_gnuplotLock;
   omp_lock_t m_imageLoadLock;
   #endif
+  
 };
 
 #endif // IMAGE_H
